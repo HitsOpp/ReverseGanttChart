@@ -76,12 +76,6 @@ export const FormBlock = <TFormValues extends Record<string, any>>({
           {isSubmitting ? "Отправка..." : submitText}
         </button>
       </form>
-
-      <div className="mt-4 text-center">
-        <span className="text-xs text-gray-500">
-          ⚡ Эта форма готова к использованию!
-        </span>
-      </div>
     </div>
   );
 };

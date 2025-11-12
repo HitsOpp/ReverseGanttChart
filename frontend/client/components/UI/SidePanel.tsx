@@ -1,4 +1,5 @@
 import { useState, type FC } from "react";
+import { FiBook, FiHelpCircle, FiUser, FiLogOut } from "react-icons/fi";
 
 interface SidePanelProps {
   userName: string;
@@ -61,7 +62,7 @@ export const SidePanel: FC<SidePanelProps> = ({ userName, userHref = "#" }) => {
       >
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-gray-900">Students Tasks</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Students Tasks</h1>
             <button
               onClick={togglePanel}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -84,33 +85,37 @@ export const SidePanel: FC<SidePanelProps> = ({ userName, userHref = "#" }) => {
 
           <div className="text-sm text-gray-500 mb-4">Русский</div>
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             <button
               onClick={() => handleItemClick("subjects")}
               className={`
-                w-full text-left p-4 rounded-lg border-2 transition-all duration-200
+                w-full text-left p-3 rounded-lg transition-all duration-200
+                flex items-center gap-3
                 ${
                   activeItem === "subjects"
-                    ? "border-blue-500 bg-blue-50 text-blue-700"
-                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                    ? "bg-blue-50 text-blue-700 border border-blue-200"
+                    : "hover:bg-gray-50 border border-transparent"
                 }
               `}
             >
-              <div className="font-medium text-lg">Предметы</div>
+              <FiBook className="w-5 h-5" />
+              <div className="font-medium text-base">Предметы</div>
             </button>
 
             <button
               onClick={() => handleItemClick("support")}
               className={`
-                w-full text-left p-4 rounded-lg border-2 transition-all duration-200
+                w-full text-left p-3 rounded-lg transition-all duration-200
+                flex items-center gap-3
                 ${
                   activeItem === "support"
-                    ? "border-blue-500 bg-blue-50 text-blue-700"
-                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                    ? "bg-blue-50 text-blue-700 border border-blue-200"
+                    : "hover:bg-gray-50 border border-transparent"
                 }
               `}
             >
-              <div className="font-medium text-lg">Поддержка</div>
+              <FiHelpCircle className="w-5 h-5" />
+              <div className="font-medium text-base">Поддержка</div>
             </button>
           </div>
         </div>
@@ -120,17 +125,19 @@ export const SidePanel: FC<SidePanelProps> = ({ userName, userHref = "#" }) => {
         <div className="p-6 border-t border-gray-200 bg-gray-50">
           <a
             href={userHref}
-            className="block py-3 px-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors mb-3"
+            className="flex items-center gap-3 py-3 px-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors mb-3"
           >
-            <div className="font-medium text-gray-900 text-center">
+            <FiUser className="w-5 h-5 text-gray-600" />
+            <div className="font-medium text-gray-900 flex-1 text-center">
               {userName}
             </div>
           </a>
 
           <button
             onClick={handleLogout}
-            className="w-full py-3 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+            className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
           >
+            <FiLogOut className="w-5 h-5" />
             Выйти
           </button>
         </div>
