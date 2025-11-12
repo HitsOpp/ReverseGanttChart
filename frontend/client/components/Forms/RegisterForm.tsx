@@ -40,7 +40,7 @@ export const RegisterForm = () => {
 
   return (
     <FormBlock<RegisterForm>
-      title="Обратная связь"
+      title="Регистрация"
       fields={fields}
       submitText="Отправить"
       onSubmit={onSubmit}

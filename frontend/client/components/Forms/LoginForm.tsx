@@ -11,7 +11,10 @@ interface LoginForm {
 
 const schema = yup.object({
   email: yup.string().email("Некорректный email").required("Введите email"),
-  password: yup.string().length(8).required("Введите пароль"),
+  password: yup
+    .string()
+    .min(8, "Пароль должен содержать не менее 8 символов")
+    .required("Введите пароль"),
 });
 
 const fields: FormField<LoginForm>[] = [
