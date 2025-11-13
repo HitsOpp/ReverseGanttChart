@@ -40,7 +40,7 @@ export const LoginForm = () => {
 
   return (
     <FormBlock<LoginForm>
-      title="Добро пожаловть"
+      title="Добро пожаловать"
       fields={fields}
       submitText="войти"
       onSubmit={onSubmit}

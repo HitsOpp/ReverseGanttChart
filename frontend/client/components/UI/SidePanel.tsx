@@ -99,7 +99,7 @@ export const SidePanel: FC<SidePanelProps> = ({ userName, userHref = "#" }) => {
               `}
             >
               <FiBook className="w-5 h-5" />
-              <div className="font-medium text-base">Предметы</div>
+              <div className="font-light text-base">Предметы</div>
             </button>
 
             <button
@@ -115,7 +115,7 @@ export const SidePanel: FC<SidePanelProps> = ({ userName, userHref = "#" }) => {
               `}
             >
               <FiHelpCircle className="w-5 h-5" />
-              <div className="font-medium text-base">Поддержка</div>
+              <div className="font-light text-base">Поддержка</div>
             </button>
           </div>
         </div>
