@@ -1,5 +1,5 @@
-import { SubjectPage } from "client/pages";
+import { WelcomePage } from "client/pages";
 
 export const App = () => {
-  return <SubjectPage />;
+  return <WelcomePage />;
 };

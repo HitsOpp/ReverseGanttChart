@@ -12,7 +12,7 @@ interface SubjectCardProps {
     | "orange"
     | "indigo"
     | "pink";
-  customHeaderColor?: string; // для кастомных цветов
+  customHeaderColor?: string;
 }
 
 export const SubjectCard: FC<SubjectCardProps> = ({
@@ -22,7 +22,6 @@ export const SubjectCard: FC<SubjectCardProps> = ({
   headerColor = "blue",
   customHeaderColor,
 }) => {
-  // Цветовые схемы для разных вариантов
   const colorSchemes = {
     blue: {
       header: "bg-linear-to-r from-blue-600 to-blue-700",
@@ -63,7 +62,6 @@ export const SubjectCard: FC<SubjectCardProps> = ({
 
   const selectedScheme = colorSchemes[headerColor];
 
-  // Если передан кастомный цвет, используем его
   const headerStyle = customHeaderColor
     ? { backgroundColor: customHeaderColor }
     : {};
