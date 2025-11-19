@@ -17,7 +17,4 @@ public class RegisterDto
     [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters long.")]
     [PasswordValidation] 
     public string Password { get; set; }
-    
-    [Required(ErrorMessage = "IsStudent field is required.")]
-    public bool IsStudent { get; set; }
 }
