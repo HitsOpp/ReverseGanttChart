@@ -1,13 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ReverseGanttChart.Data;
-using ReverseGanttChart.Models;
 using ReverseGanttChart.Services.User;
 
 namespace ReverseGanttChart.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
+[Authorize]
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
@@ -18,17 +17,40 @@ public class UserController : ControllerBase
     }
 
     [Authorize(Roles = "Teacher")]
-    [HttpGet("users")]
+    [HttpGet("all")]
     public async Task<IActionResult> GetAllUsers()
     {
-        return await _userService.GetAllUsers();
+        var result = await _userService.GetAllUsersAsync();
+        return result;
     }
-    
-    [Authorize]
-    [HttpGet("roles")]
-    public async Task<IActionResult> GetUserRoles()
+
+    [HttpGet("profile")]
+    public async Task<IActionResult> GetUserProfile()
     {
         var userId = Guid.Parse(User.FindFirst("Id")?.Value);
-        return await _userService.GetUserRoles(userId);
+        var result = await _userService.GetUserProfileAsync(userId);
+        return result;
+    }
+    
+
+    [Authorize(Roles = "Teacher")]
+    [HttpGet("subject/{subjectId}/students")]
+    public async Task<IActionResult> GetSubjectStudents(Guid subjectId)
+    {
+        return await _userService.GetSubjectStudentsAsync(subjectId);
+    }
+    
+    [Authorize(Roles = "Teacher")]
+    [HttpGet("subject/{subjectId}/assists")]
+    public async Task<IActionResult> GetSubjectAssistsAsync(Guid subjectId)
+    {
+        return await _userService.GetSubjectAssistsAsync(subjectId);
+    }
+
+    [Authorize(Roles = "Teacher")]
+    [HttpGet("subject/{subjectId}/teachers")]
+    public async Task<IActionResult> GetSubjectTeachers(Guid subjectId)
+    {
+        return await _userService.GetSubjectTeachersAsync(subjectId);
     }
 }
