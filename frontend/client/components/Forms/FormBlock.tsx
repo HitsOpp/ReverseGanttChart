@@ -3,15 +3,16 @@ import {
   type FieldErrors,
   type UseFormRegister,
   type Path,
+  type FieldValues,
 } from "react-hook-form";
 
-export interface FormField<TFormValues> {
+export interface FormField<TFormValues extends FieldValues> {
   name: Path<TFormValues>;
   placeholder: string;
   label?: string;
 }
 
-interface FormBlockProps<TFormValues extends Record<string, any>> {
+interface FormBlockProps<TFormValues extends FieldValues> {
   title: string;
   fields: FormField<TFormValues>[];
   submitText: string;
@@ -21,7 +22,7 @@ interface FormBlockProps<TFormValues extends Record<string, any>> {
   isSubmitting?: boolean;
 }
 
-export const FormBlock = <TFormValues extends Record<string, any>>({
+export const FormBlock = <TFormValues extends FieldValues>({
   title,
   fields,
   submitText,
@@ -49,8 +50,8 @@ export const FormBlock = <TFormValues extends Record<string, any>>({
                 {field.label}
               </label>
             )}
+
             <input
-              type="text"
               placeholder={field.placeholder}
               {...register(field.name)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg 
@@ -58,6 +59,7 @@ export const FormBlock = <TFormValues extends Record<string, any>>({
                          focus:border-indigo-400 transition duration-200 bg-gray-50
                          placeholder-gray-400 text-gray-800"
             />
+
             {errors[field.name] && (
               <p className="text-red-500 text-xs mt-1">
                 {String(errors[field.name]?.message)}
@@ -69,7 +71,7 @@ export const FormBlock = <TFormValues extends Record<string, any>>({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full py-3 px-4 bg-indigo-600 text-white font-semibold rounded-lg shadow
+          className="w-full cursor-pointer py-3 px-4 bg-indigo-600 text-white font-semibold rounded-lg shadow
                      hover:bg-indigo-700 transition-colors duration-200 focus:outline-none 
                      focus:ring-2 focus:ring-indigo-300 disabled:opacity-50"
         >

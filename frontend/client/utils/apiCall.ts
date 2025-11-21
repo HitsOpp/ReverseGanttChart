@@ -1,48 +1,91 @@
-import axios, { type AxiosRequestConfig } from "axios";
+import axios from "axios";
 
-const axiosInstance = axios.create({
-  baseURL: "localhost",
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-  },
 });
 
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("accessToken");
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+let isRefreshing = false;
+let queue: ((token: string) => void)[] = [];
+
+api.interceptors.response.use(
+  (res) => res,
+  async (error) => {
+    const original = error.config;
+
+    if (error.response?.status === 401 && !original._retry) {
+      original._retry = true;
+
+      if (!isRefreshing) {
+        isRefreshing = true;
+
+        try {
+          const { accessToken } = await axios
+            .post(
+              `${import.meta.env.VITE_API_URL}/auth/refresh`,
+              {},
+              { withCredentials: true }
+            )
+            .then((r) => r.data);
+
+          localStorage.setItem("accessToken", accessToken);
+
+          queue.forEach((cb) => cb(accessToken));
+          queue = [];
+
+          isRefreshing = false;
+
+          original.headers = original.headers || {};
+          original.headers.Authorization = `Bearer ${accessToken}`;
+
+          return api(original);
+        } catch (err) {
+          queue = [];
+          isRefreshing = false;
+          localStorage.removeItem("accessToken");
+          return Promise.reject(err);
+        }
+      }
+
+      return new Promise((resolve) => {
+        queue.push((token: string) => {
+          original.headers = original.headers || {};
+          original.headers.Authorization = `Bearer ${token}`;
+          resolve(api(original));
+        });
+      });
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 export const apiCall = {
-  async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const { data } = await axiosInstance.get<T>(url, config);
-    return data;
+  get: async <T>(url: string, params?: object): Promise<T> => {
+    const res = await api.get<T>(url, { params });
+    return res.data;
   },
 
-  async post<T, B = unknown>(
-    url: string,
-    body?: B,
-    config?: AxiosRequestConfig
-  ): Promise<T> {
-    const { data } = await axiosInstance.post<T>(url, body, config);
-    return data;
+  post: async <T>(url: string, data?: object): Promise<T> => {
+    const res = await api.post<T>(url, data);
+    return res.data;
   },
 
-  async put<T, B = unknown>(
-    url: string,
-    body?: B,
-    config?: AxiosRequestConfig
-  ): Promise<T> {
-    const { data } = await axiosInstance.put<T>(url, body, config);
-    return data;
+  put: async <T>(url: string, data?: object): Promise<T> => {
+    const res = await api.put<T>(url, data);
+    return res.data;
   },
 
-  async patch<T, B = unknown>(
-    url: string,
-    body?: B,
-    config?: AxiosRequestConfig
-  ): Promise<T> {
-    const { data } = await axiosInstance.patch<T>(url, body, config);
-    return data;
-  },
-
-  async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const { data } = await axiosInstance.delete<T>(url, config);
-    return data;
+  delete: async <T>(url: string): Promise<T> => {
+    const res = await api.delete<T>(url);
+    return res.data;
   },
 };
