@@ -1,6 +1,5 @@
+using Microsoft.AspNetCore.Mvc;
 using ReverseGanttChart.Models;
-
-namespace ReverseGanttChart.Services.Subject;
 
 public interface ISubjectService
 {
@@ -10,4 +9,6 @@ public interface ISubjectService
     Task<List<SubjectDto>> GetAllSubjectsAsync();
     Task<string> GrantAssistRoleAsync(Guid subjectId, Guid userId, Guid currentUserId);
     Task<string> RevokeAssistRoleAsync(Guid subjectId, Guid userId, Guid currentUserId);
+    Task<IActionResult> EditSubjectAsync(Guid subjectId, EditSubjectDto request, Guid userId); 
+    Task<IActionResult> DeleteSubjectAsync(Guid subjectId, Guid userId);
 }

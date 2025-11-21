@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReverseGanttChart.Data;
 using ReverseGanttChart.Models;
@@ -268,6 +269,40 @@ public class SubjectService : ISubjectService
             .FirstOrDefaultAsync(us => us.UserId == userId && us.SubjectId == subjectId && us.Role == SubjectRole.Teacher);
 
         return userSubject != null;
+    }
+    
+    public async Task<IActionResult> EditSubjectAsync(Guid subjectId, EditSubjectDto request, Guid userId)
+    {
+        var subject = await _context.Subjects.FindAsync(subjectId);
+        if (subject == null)
+            throw new KeyNotFoundException("Subject not found");
+        
+        if (subject.CreatedById != userId)
+            throw new UnauthorizedAccessException("Only subject creator can edit subject");
+
+        subject.Name = request.Name;
+        subject.Description = request.Description;
+
+        _context.Subjects.Update(subject);
+        await _context.SaveChangesAsync();
+
+        var subjectDto = await GetSubjectDtoAsync(subject.Id, userId);
+        return new OkObjectResult(subjectDto);
+    }
+
+    public async Task<IActionResult> DeleteSubjectAsync(Guid subjectId, Guid userId)
+    {
+        var subject = await _context.Subjects.FindAsync(subjectId);
+        if (subject == null)
+            throw new KeyNotFoundException("Subject not found");
+        
+        if (subject.CreatedById != userId)
+            throw new UnauthorizedAccessException("Only subject creator can delete subject");
+
+        _context.Subjects.Remove(subject);
+        await _context.SaveChangesAsync();
+
+        return new OkObjectResult(new { message = "Subject deleted successfully" });
     }
 }
 }
