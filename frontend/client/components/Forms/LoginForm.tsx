@@ -1,25 +1,26 @@
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import axios from "axios";
+import { AuthApi } from "client/utils";
 import { FormBlock, type FormField } from "./FormBlock";
+import type { AxiosError } from "axios";
 
-interface LoginForm {
-  password: string;
+interface LoginFormType {
   email: string;
+  password: string;
 }
 
 const schema = yup.object({
   email: yup.string().email("Некорректный email").required("Введите email"),
   password: yup
     .string()
-    .min(8, "Пароль должен содержать не менее 8 символов")
+    .min(8, "Минимум 8 символов")
     .required("Введите пароль"),
 });
 
-const fields: FormField<LoginForm>[] = [
+const fields: FormField<LoginFormType>[] = [
   { name: "email", placeholder: "Введите email", label: "Email" },
-  { name: "password", placeholder: "Введите пароль", label: "Password" },
+  { name: "password", placeholder: "Введите пароль", label: "Пароль" },
 ];
 
 export const LoginForm = () => {
@@ -28,21 +29,34 @@ export const LoginForm = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<LoginForm>({
+  } = useForm<LoginFormType>({
     resolver: yupResolver(schema),
   });
 
-  const onSubmit = handleSubmit(async (data) => {
-    await axios.post("/api/feedback", data);
-    reset();
-    alert("Успешно отправлено!");
+  const onSubmit = handleSubmit(async (formData) => {
+    try {
+      const { accessToken, user } = await AuthApi.login(formData);
+
+      localStorage.setItem("accessToken", accessToken);
+
+      reset();
+      alert("Добро пожаловать, " + user.fullName + "!");
+    } catch (error) {
+      const err = error as AxiosError<{ message?: string }>;
+
+      const message =
+        err.response?.data?.message || err.message || "Ошибка входа";
+
+      alert(message);
+      console.error(err);
+    }
   });
 
   return (
-    <FormBlock<LoginForm>
+    <FormBlock<LoginFormType>
       title="Добро пожаловать"
       fields={fields}
-      submitText="войти"
+      submitText="Войти"
       onSubmit={onSubmit}
       register={register}
       errors={errors}

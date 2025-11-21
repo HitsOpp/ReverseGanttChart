@@ -22,14 +22,14 @@ export const WelcomePage = () => {
         <div className="flex flex-col sm:flex-row gap-4">
           <button
             onClick={openLoginModal}
-            className="px-8 py-3 bg-indigo-600 text-white rounded-xl font-semibold text-lg
+            className="px-8 py-3 cursor-pointer bg-indigo-600 text-white rounded-xl font-semibold text-lg
                        shadow-lg hover:bg-indigo-700 transition-all duration-200"
           >
             Войти
           </button>
           <button
             onClick={openRegisterModal}
-            className="px-8 py-3 bg-white border border-indigo-200 text-indigo-700 rounded-xl font-semibold text-lg
+            className="px-8 py-3 cursor-pointer  bg-white border border-indigo-200 text-indigo-700 rounded-xl font-semibold text-lg
                        shadow-sm hover:border-indigo-400 hover:bg-indigo-50 transition-all duration-200"
           >
             Зарегистрироваться
@@ -38,7 +38,7 @@ export const WelcomePage = () => {
       </section>
 
       <footer className="py-8 text-center text-sm text-gray-500">
-        © {new Date().getFullYear()} EduPlatform — обучение нового поколения
+        © {new Date().getFullYear()} StudentsTasks — обучение нового поколения
       </footer>
 
       {modalType && (
@@ -46,7 +46,7 @@ export const WelcomePage = () => {
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full relative animate-fadeIn">
             <button
               onClick={closeModal}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+              className="absolute cursor-pointer top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
             >
               ✕
             </button>
@@ -55,23 +55,23 @@ export const WelcomePage = () => {
               {modalType === "login" ? <LoginForm /> : <RegisterForm />}
             </div>
 
-            <div className="p-4 border-t text-center text-sm text-gray-600">
+            <div className="p-4 text-center text-sm text-gray-600">
               {modalType === "login" ? (
                 <>
-                  Нет аккаунта?{" "}
+                  Нет аккаунта?
                   <button
                     onClick={openRegisterModal}
-                    className="text-indigo-600 font-semibold hover:text-indigo-700 underline"
+                    className="ml-1 cursor-pointer text-indigo-600 font-semibold hover:text-indigo-700 underline"
                   >
                     Зарегистрироваться
                   </button>
                 </>
               ) : (
                 <>
-                  Уже есть аккаунт?{" "}
+                  Уже есть аккаунт?
                   <button
                     onClick={openLoginModal}
-                    className="text-indigo-600 font-semibold hover:text-indigo-700 underline"
+                    className="ml-1 cursor-pointers text-indigo-600 font-semibold hover:text-indigo-700 underline"
                   >
                     Войти
                   </button>
