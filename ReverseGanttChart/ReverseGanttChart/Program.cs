@@ -7,6 +7,7 @@ using ReverseGanttChart.Services;
 using ReverseGanttChart.Services.JWT;
 using System.Text;
 using ReverseGanttChart.Services.Subject;
+using ReverseGanttChart.Services.Team;
 using ReverseGanttChart.Services.User;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -52,6 +53,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>(); 
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<ISubjectService, SubjectService>();
+builder.Services.AddScoped<ITeamService, TeamService>();
 
 builder.Services.AddSwaggerGen(options =>
 {
