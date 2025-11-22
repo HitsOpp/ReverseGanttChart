@@ -1,9 +1,9 @@
-import { SubjectPage } from "client/pages";
+import { AppRouter } from "./routes";
 
 export const App = () => {
   return (
     <>
-      <SubjectPage />
+      <AppRouter />
     </>
   );
 };

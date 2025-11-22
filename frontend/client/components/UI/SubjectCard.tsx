@@ -13,6 +13,7 @@ interface SubjectCardProps {
     | "indigo"
     | "pink";
   customHeaderColor?: string;
+  onNavigate?: (tab: "about" | "tasks" | "team" | "users") => void;
 }
 
 export const SubjectCard: FC<SubjectCardProps> = ({
@@ -21,51 +22,43 @@ export const SubjectCard: FC<SubjectCardProps> = ({
   className = "",
   headerColor = "blue",
   customHeaderColor,
+  onNavigate,
 }) => {
-  const colorSchemes = {
+  const colorSchemes: Record<string, { header: string; text: string }> = {
     blue: {
-      header: "bg-linear-to-r from-blue-600 to-blue-700",
+      header: "bg-gradient-to-r from-blue-600 to-blue-700",
       text: "text-blue-100",
-      icon: "blue",
     },
     green: {
-      header: "bg-linear-to-r from-green-600 to-green-700",
+      header: "bg-gradient-to-r from-green-600 to-green-700",
       text: "text-green-100",
-      icon: "green",
     },
     red: {
-      header: "bg-linear-to-r from-red-600 to-red-700",
+      header: "bg-gradient-to-r from-red-600 to-red-700",
       text: "text-red-100",
-      icon: "red",
     },
     purple: {
-      header: "bg-linear-to-r from-purple-600 to-purple-700",
+      header: "bg-gradient-to-r from-purple-600 to-purple-700",
       text: "text-purple-100",
-      icon: "purple",
     },
     orange: {
-      header: "bg-linear-to-r from-orange-600 to-orange-700",
+      header: "bg-gradient-to-r from-orange-600 to-orange-700",
       text: "text-orange-100",
-      icon: "orange",
     },
     indigo: {
-      header: "bg-linear-to-r from-indigo-600 to-indigo-700",
+      header: "bg-gradient-to-r from-indigo-600 to-indigo-700",
       text: "text-indigo-100",
-      icon: "indigo",
     },
     pink: {
-      header: "bg-linear-to-r from-pink-600 to-pink-700",
+      header: "bg-gradient-to-r from-pink-600 to-pink-700",
       text: "text-pink-100",
-      icon: "pink",
     },
   };
 
   const selectedScheme = colorSchemes[headerColor];
-
   const headerStyle = customHeaderColor
     ? { backgroundColor: customHeaderColor }
     : {};
-
   const headerClass = customHeaderColor
     ? "p-4 text-white"
     : `p-4 text-white ${selectedScheme.header}`;
@@ -86,7 +79,10 @@ export const SubjectCard: FC<SubjectCardProps> = ({
       </div>
 
       <div className="p-4 space-y-3">
-        <div className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer group">
+        <div
+          className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer group"
+          onClick={() => onNavigate?.("users")}
+        >
           <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
             <svg
               className="w-4 h-4 text-blue-600"
@@ -105,7 +101,10 @@ export const SubjectCard: FC<SubjectCardProps> = ({
           <span className="font-medium text-gray-700">Пользователи</span>
         </div>
 
-        <div className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-green-300 hover:bg-green-50 transition-colors cursor-pointer group">
+        <div
+          className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-green-300 hover:bg-green-50 transition-colors cursor-pointer group"
+          onClick={() => onNavigate?.("team")}
+        >
           <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors">
             <svg
               className="w-4 h-4 text-green-600"
@@ -124,7 +123,10 @@ export const SubjectCard: FC<SubjectCardProps> = ({
           <span className="font-medium text-gray-700">Команда</span>
         </div>
 
-        <div className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-colors cursor-pointer group">
+        <div
+          className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-colors cursor-pointer group"
+          onClick={() => onNavigate?.("tasks")}
+        >
           <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center group-hover:bg-orange-200 transition-colors">
             <svg
               className="w-4 h-4 text-orange-600"
