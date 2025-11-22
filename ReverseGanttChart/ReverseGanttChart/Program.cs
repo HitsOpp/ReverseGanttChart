@@ -13,7 +13,17 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5173")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    });
+});
 // Database configuration
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
                        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -49,15 +59,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization();
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        policy.WithOrigins("http://localhost:5173") 
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
-});
+
 
 // Register services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -109,11 +111,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseCors("AllowAll");
 // Добавьте эти middleware в правильном порядке
 app.UseAuthentication(); // Должно быть перед UseAuthorization
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
