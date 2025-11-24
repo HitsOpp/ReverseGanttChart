@@ -1,27 +1,34 @@
 import { useState, type FC } from "react";
 import { FiBook, FiHelpCircle, FiUser, FiLogOut } from "react-icons/fi";
+import { useNavigate } from "react-router";
 
 interface SidePanelProps {
   userName: string;
   userHref?: string;
+  isOpen: boolean;
+  setIsOpen: (v: boolean) => void;
 }
 
 type MenuItem = "subjects" | "support";
 
-export const SidePanel: FC<SidePanelProps> = ({ userName, userHref = "#" }) => {
-  const [isOpen, setIsOpen] = useState(true);
+export const SidePanel: FC<SidePanelProps> = ({
+  isOpen,
+  setIsOpen,
+  userName,
+  userHref = "#",
+}) => {
+  const navigate = useNavigate();
   const [activeItem, setActiveItem] = useState<MenuItem>("subjects");
-
-  const togglePanel = () => {
-    setIsOpen(!isOpen);
-  };
+  const togglePanel = () => setIsOpen(!isOpen);
 
   const handleItemClick = (item: MenuItem) => {
+    navigate(`/${item}`);
     setActiveItem(item);
   };
 
   const handleLogout = () => {
-    console.log("Logout clicked");
+    localStorage.removeItem("accessToken");
+    navigate("/");
   };
 
   return (

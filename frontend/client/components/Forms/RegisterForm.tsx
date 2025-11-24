@@ -4,6 +4,7 @@ import * as yup from "yup";
 import { AuthApi } from "client/utils";
 import { FormBlock, type FormField } from "./FormBlock";
 import type { AxiosError } from "axios";
+import { useNavigate } from "react-router";
 
 interface RegisterFormType {
   fullName: string;
@@ -27,6 +28,7 @@ const fields: FormField<RegisterFormType>[] = [
 ];
 
 export const RegisterForm = () => {
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -38,12 +40,11 @@ export const RegisterForm = () => {
 
   const onSubmit = handleSubmit(async (formData) => {
     try {
-      const { accessToken, user } = await AuthApi.register(formData);
+      const { token } = await AuthApi.register(formData);
 
-      localStorage.setItem("accessToken", accessToken);
-
+      localStorage.setItem("accessToken", token);
+      navigate("/subjects");
       reset();
-      alert("Аккаунт создан! Добро пожаловать, " + user.fullName);
     } catch (error) {
       const err = error as AxiosError<{ message?: string }>;
 

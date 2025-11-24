@@ -12,12 +12,7 @@ export interface RegisterDto {
 }
 
 export interface AuthResponse {
-  accessToken: string;
-  user: {
-    id: string;
-    email: string;
-    fullName: string;
-  };
+  token: string;
 }
 
 export const AuthApi = {

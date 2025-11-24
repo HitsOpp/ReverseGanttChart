@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SidePanel, SubjectCard } from "client/components";
+import { SubjectCard } from "client/components";
 import { SubjectDetailPage } from "./SubjectDetailPage";
 
 export const SubjectPage = () => {
@@ -16,9 +16,7 @@ export const SubjectPage = () => {
 
   return (
     <div className="min-h-screen">
-      <SidePanel userName="Мосин Денис Юрьевич" />
-
-      <div className="ml-80 h-[180px] bg-blue-300 pt-4">
+      <div className="ml-15 h-[180px] bg-blue-300 pt-4">
         <div className="h-[75px] w-[1000px] mt-15 rounded-md ml-13 p-4 z-0 bg-white">
           <h3 className="text-3xl font-light text-gray-900 mb-8 z-100">
             Предметы
@@ -27,8 +25,8 @@ export const SubjectPage = () => {
       </div>
 
       <main className="lg:ml-10px p-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="ml-40 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-15">
+        <div className="max-w-7xl ml-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
             <SubjectCard
               customHeaderColor="#8B5CF6"
               title="Математика"

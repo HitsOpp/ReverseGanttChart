@@ -4,6 +4,7 @@ import * as yup from "yup";
 import { AuthApi } from "client/utils";
 import { FormBlock, type FormField } from "./FormBlock";
 import type { AxiosError } from "axios";
+import { useNavigate } from "react-router";
 
 interface LoginFormType {
   email: string;
@@ -24,6 +25,7 @@ const fields: FormField<LoginFormType>[] = [
 ];
 
 export const LoginForm = () => {
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -35,12 +37,13 @@ export const LoginForm = () => {
 
   const onSubmit = handleSubmit(async (formData) => {
     try {
-      const { accessToken, user } = await AuthApi.login(formData);
-
-      localStorage.setItem("accessToken", accessToken);
+      const response = await AuthApi.login(formData);
+      console.log(response);
+      const { token } = response;
+      localStorage.setItem("accessToken", token);
 
       reset();
-      alert("Добро пожаловать, " + user.fullName + "!");
+      navigate("/subjects");
     } catch (error) {
       const err = error as AxiosError<{ message?: string }>;
 
