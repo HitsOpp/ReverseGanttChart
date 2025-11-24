@@ -12,3 +12,9 @@ export const loadSubjects = () => {
     queryFn: () => apiCall.get<loadSubjectType[]>("/subjects"),
   });
 };
+export const loadSubjectById = (id: string) => {
+  return queryOptions({
+    queryKey: subjectKeyFactory.loadSubject(),
+    queryFn: () => apiCall.get<loadSubjectType[]>(`/subjects/${id}`),
+  });
+};

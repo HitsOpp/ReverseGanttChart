@@ -1,6 +1,6 @@
 import { apiCall } from "client/utils";
 import { queryOptions } from "@tanstack/react-query";
-import { type loadSubjectType } from "client/shared";
+import type { loadProfileDataResponse } from "@/shared";
 
 const profileKeyFactory = {
   loadPofileData: () => ["loadProfile"],
@@ -9,6 +9,6 @@ const profileKeyFactory = {
 export const loadProfileData = () => {
   return queryOptions({
     queryKey: profileKeyFactory.loadPofileData(),
-    queryFn: () => apiCall.get<loadSubjectType[]>("/profile"),
+    queryFn: () => apiCall.get<loadProfileDataResponse>("/Auth/profile"),
   });
 };
