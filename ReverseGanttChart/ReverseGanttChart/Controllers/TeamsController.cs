@@ -4,7 +4,7 @@ using ReverseGanttChart.Models;
 using ReverseGanttChart.Services.Team;
 
 [ApiController]
-[Route("api/subjects/{subjectId}/[controller]")]
+[Route("[controller]")]
 [Authorize]
 public class TeamsController : ControllerBase
 {
@@ -69,11 +69,28 @@ public class TeamsController : ControllerBase
         return result;
     }
 
-    [HttpDelete("{teamId}/members/{memberUserId}")]
+    [HttpDelete("{teamId}/members/remove")]
     public async Task<IActionResult> RemoveTeamMember(Guid teamId, Guid memberUserId)
     {
         var currentUserId = Guid.Parse(User.FindFirst("Id")?.Value);
         var result = await _teamService.RemoveTeamMemberAsync(teamId, memberUserId, currentUserId);
         return result;
     }
+
+    [HttpGet("my-team")]
+    public async Task<IActionResult> GetMyTeamInSubject(Guid subjectId)
+    {
+        var userId = Guid.Parse(User.FindFirst("Id")?.Value);
+        var result = await _teamService.GetUserTeamInSubjectAsync(subjectId, userId);
+        return result;
+    }
+
+    [HttpGet("user/team")]
+    [Authorize(Roles = "Teacher")]
+    public async Task<IActionResult> GetUserTeamInSubject(Guid subjectId, Guid userId)
+    {
+        var result = await _teamService.GetUserTeamInSubjectAsync(subjectId, userId);
+        return result;
+    }
+    
 }

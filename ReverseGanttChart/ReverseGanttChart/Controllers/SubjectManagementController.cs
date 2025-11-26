@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ReverseGanttChart.Models;
 
 [ApiController]
-[Route("api/subjects/{subjectId}/[controller]")]
+[Route("[controller]")]
 [Authorize]
 public class SubjectManagementController : ControllerBase
 {

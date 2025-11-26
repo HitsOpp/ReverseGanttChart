@@ -5,7 +5,7 @@ using ReverseGanttChart.Services.Subject;
 namespace ReverseGanttChart.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 [Authorize]
 public class SubjectRolesController : ControllerBase
 {
@@ -16,7 +16,7 @@ public class SubjectRolesController : ControllerBase
         _subjectService = subjectService;
     }
 
-    [HttpPut("{subjectId}/grant-assist/{userId}")]
+    [HttpPut("grant-assist")]
     public async Task<IActionResult> GrantAssistRole(Guid subjectId, Guid userId)
     {
         var currentUserId = Guid.Parse(User.FindFirst("Id")?.Value);
@@ -24,7 +24,7 @@ public class SubjectRolesController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPut("{subjectId}/revoke-assist/{userId}")]
+    [HttpPut("revoke-assist")]
     public async Task<IActionResult> RevokeAssistRole(Guid subjectId, Guid userId)
     {
         var currentUserId = Guid.Parse(User.FindFirst("Id")?.Value);

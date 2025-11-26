@@ -5,7 +5,7 @@ using ReverseGanttChart.Services.User;
 namespace ReverseGanttChart.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 [Authorize]
 public class UserController : ControllerBase
 {
@@ -34,21 +34,21 @@ public class UserController : ControllerBase
     
 
     [Authorize(Roles = "Teacher")]
-    [HttpGet("subject/{subjectId}/students")]
+    [HttpGet("subject/students")]
     public async Task<IActionResult> GetSubjectStudents(Guid subjectId)
     {
         return await _userService.GetSubjectStudentsAsync(subjectId);
     }
     
     [Authorize(Roles = "Teacher")]
-    [HttpGet("subject/{subjectId}/assists")]
+    [HttpGet("subject/assists")]
     public async Task<IActionResult> GetSubjectAssistsAsync(Guid subjectId)
     {
         return await _userService.GetSubjectAssistsAsync(subjectId);
     }
 
     [Authorize(Roles = "Teacher")]
-    [HttpGet("subject/{subjectId}/teachers")]
+    [HttpGet("subject/teachers")]
     public async Task<IActionResult> GetSubjectTeachers(Guid subjectId)
     {
         return await _userService.GetSubjectTeachersAsync(subjectId);

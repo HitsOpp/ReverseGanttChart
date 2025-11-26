@@ -10,5 +10,8 @@ namespace ReverseGanttChart.Models
 
         [StringLength(500)]
         public string Description { get; set; }
+
+        [StringLength(200)]
+        public string TechStack { get; set; }
     }
 }
