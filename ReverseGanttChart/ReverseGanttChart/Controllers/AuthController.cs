@@ -51,27 +51,6 @@ public class AuthController : ControllerBase
             return StatusCode(500, new { message = "An error occurred during login." });
         }
     }
-    
-    [Authorize]
-    [HttpGet("profile")]
-    public async Task<IActionResult> GetProfile()
-    {
-        var userIdClaim = User.FindFirst("Id")?.Value;
-        if (string.IsNullOrEmpty(userIdClaim))
-            return Unauthorized("Invalid token: User ID not found.");
-
-        var userId = Guid.Parse(userIdClaim);
-
-        try
-        {
-            var profile = await _authService.GetProfile(userId);
-            return Ok(profile);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
-    }
 
     [Authorize]
     [HttpPut("profile")]
