@@ -54,4 +54,21 @@ public class SubjectsController : ControllerBase
         var result = await _subjectService.GetSubjectByIdAsync(subjectId);
         return result;
     }
+    [HttpGet("students")]
+    public async Task<IActionResult> GetSubjectStudents(Guid subjectId)
+    {
+        return await _subjectService.GetSubjectStudentsAsync(subjectId);
+    }
+
+    [HttpGet("assists")]
+    public async Task<IActionResult> GetSubjectAssists(Guid subjectId)
+    {
+        return await _subjectService.GetSubjectAssistsAsync(subjectId);
+    }
+
+    [HttpGet("teachers")]
+    public async Task<IActionResult> GetSubjectTeachers(Guid subjectId)
+    {
+        return await _subjectService.GetSubjectTeachersAsync(subjectId);
+    }
 }

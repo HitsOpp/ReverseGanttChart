@@ -31,26 +31,4 @@ public class UserController : ControllerBase
         var result = await _userService.GetUserProfileAsync(userId);
         return result;
     }
-    
-
-    [Authorize(Roles = "Teacher")]
-    [HttpGet("subject/students")]
-    public async Task<IActionResult> GetSubjectStudents(Guid subjectId)
-    {
-        return await _userService.GetSubjectStudentsAsync(subjectId);
-    }
-    
-    [Authorize(Roles = "Teacher")]
-    [HttpGet("subject/assists")]
-    public async Task<IActionResult> GetSubjectAssistsAsync(Guid subjectId)
-    {
-        return await _userService.GetSubjectAssistsAsync(subjectId);
-    }
-
-    [Authorize(Roles = "Teacher")]
-    [HttpGet("subject/teachers")]
-    public async Task<IActionResult> GetSubjectTeachers(Guid subjectId)
-    {
-        return await _userService.GetSubjectTeachersAsync(subjectId);
-    }
 }

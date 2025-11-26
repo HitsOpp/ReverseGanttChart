@@ -30,7 +30,7 @@ public class TeamsController : ControllerBase
         return result;
     }
 
-    [HttpGet("{teamId}")]
+    [HttpGet("information/{teamId}")]
     public async Task<IActionResult> GetTeam(Guid teamId)
     {
         var result = await _teamService.GetTeamAsync(teamId);

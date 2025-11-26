@@ -345,5 +345,76 @@ namespace ReverseGanttChart.Services.Subject
 
             return userSubject != null;
         }
+                public async Task<IActionResult> GetSubjectStudentsAsync(Guid subjectId)
+        {
+            var students = await _context.UserSubjects
+                .Where(us => us.SubjectId == subjectId && us.Role == SubjectRole.Student)
+                .Include(us => us.User)
+                .Select(us => new
+                {
+                    UserId = us.UserId,
+                    FullName = us.User.FullName,
+                    Email = us.User.Email,
+                    JoinedAt = us.JoinedAt
+                })
+                .ToListAsync();
+
+            return new OkObjectResult(students);
+        }
+
+        public async Task<IActionResult> GetSubjectAssistsAsync(Guid subjectId)
+        {
+            var assists = await _context.UserSubjects
+                .Where(us => us.SubjectId == subjectId && us.Role == SubjectRole.Assist)
+                .Include(us => us.User)
+                .Select(us => new
+                {
+                    UserId = us.UserId,
+                    FullName = us.User.FullName,
+                    Email = us.User.Email,
+                    JoinedAt = us.JoinedAt
+                })
+                .ToListAsync();
+
+            return new OkObjectResult(assists);
+        }
+
+        public async Task<IActionResult> GetSubjectTeachersAsync(Guid subjectId)
+        {
+            var teachers = new List<object>();
+
+            var subject = await _context.Subjects
+                .Include(s => s.CreatedBy)
+                .FirstOrDefaultAsync(s => s.Id == subjectId);
+
+            if (subject != null)
+            {
+                teachers.Add(new
+                {
+                    UserId = subject.CreatedById,
+                    FullName = subject.CreatedBy.FullName,
+                    Email = subject.CreatedBy.Email,
+                    IsCreator = true,
+                    JoinedAt = subject.CreatedAt
+                });
+            }
+
+            var joinedTeachers = await _context.UserSubjects
+                .Where(us => us.SubjectId == subjectId && us.Role == SubjectRole.Teacher && us.UserId != subject.CreatedById)
+                .Include(us => us.User)
+                .Select(us => new
+                {
+                    UserId = us.UserId,
+                    FullName = us.User.FullName,
+                    Email = us.User.Email,
+                    IsCreator = false,
+                    JoinedAt = us.JoinedAt
+                })
+                .ToListAsync();
+
+            teachers.AddRange(joinedTeachers);
+
+            return new OkObjectResult(teachers);
+        }
     }
 }

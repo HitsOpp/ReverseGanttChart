@@ -11,4 +11,7 @@ public interface ISubjectService
     Task<IActionResult> EditSubjectAsync(Guid subjectId, EditSubjectDto request, Guid userId);
     Task<IActionResult> DeleteSubjectAsync(Guid subjectId, Guid userId);
     Task<IActionResult> GetSubjectByIdAsync(Guid subjectId);
+   Task<IActionResult> GetSubjectStudentsAsync(Guid subjectId);
+Task<IActionResult> GetSubjectAssistsAsync(Guid subjectId);
+Task<IActionResult> GetSubjectTeachersAsync(Guid subjectId);
 }
