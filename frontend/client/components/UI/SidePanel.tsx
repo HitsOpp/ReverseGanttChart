@@ -1,4 +1,4 @@
-import { useState, type FC } from "react";
+import { useState, type FC, useEffect } from "react";
 import { FiBook, FiHelpCircle, FiUser, FiLogOut } from "react-icons/fi";
 import { useNavigate } from "react-router";
 
@@ -18,7 +18,16 @@ export const SidePanel: FC<SidePanelProps> = ({
   userHref = "#",
 }) => {
   const navigate = useNavigate();
-  const [activeItem, setActiveItem] = useState<MenuItem>("subjects");
+
+  const [activeItem, setActiveItem] = useState<MenuItem>(() => {
+    const saved = localStorage.getItem("sidePanelActive");
+    return saved === "support" ? "support" : "subjects";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("sidePanelActive", activeItem);
+  }, [activeItem]);
+
   const togglePanel = () => setIsOpen(!isOpen);
 
   const handleItemClick = (item: MenuItem) => {
@@ -28,7 +37,7 @@ export const SidePanel: FC<SidePanelProps> = ({
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
-    navigate("/");
+    navigate("/login");
   };
 
   return (
@@ -61,11 +70,11 @@ export const SidePanel: FC<SidePanelProps> = ({
 
       <div
         className={`
-        fixed top-0 left-0 h-full bg-white shadow-xl z-50
-        transform transition-transform duration-300 ease-in-out
-        ${isOpen ? "translate-x-0" : "-translate-x-full"}
-        w-80 flex flex-col
-      `}
+          fixed top-0 left-0 h-full bg-white shadow-xl z-50
+          transform transition-transform duration-300 ease-in-out
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          w-80 flex flex-col
+        `}
       >
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">

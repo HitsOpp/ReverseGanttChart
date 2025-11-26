@@ -1,5 +1,10 @@
 import { Routes, Route } from "react-router-dom";
-import { WelcomePage, SubjectPage, SubjectDetailPage } from "client/pages";
+import {
+  WelcomePage,
+  SubjectPage,
+  SubjectDetailPage,
+  SupportPage,
+} from "client/pages";
 import { ProtectedRouter } from "./ProtectedRouter";
 
 export const AppRouter = () => {
@@ -17,19 +22,18 @@ export const AppRouter = () => {
       />
 
       <Route
-        path="/subjects/id=:id"
+        path="/subjects/:id/:tab?"
         element={
           <ProtectedRouter>
             <SubjectDetailPage />
           </ProtectedRouter>
         }
       />
-
       <Route
-        path="/"
+        path="/support"
         element={
           <ProtectedRouter>
-            <SubjectPage />
+            <SupportPage />
           </ProtectedRouter>
         }
       />

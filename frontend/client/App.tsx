@@ -1,28 +1,40 @@
-import { useState } from "react";
+import { useLocalStorage } from "./hooks";
 import { SidePanel } from "./components";
 import { AppRouter } from "./routes";
 import { useQuery } from "@tanstack/react-query";
 import { loadProfileData } from "./api";
-import { BrowserRouter } from "react-router";
+import { BrowserRouter, useLocation } from "react-router-dom";
 
-export const App = () => {
-  const [panelOpen, setPanelOpen] = useState(true);
+const AppContent = () => {
+  const [panelOpen, setPanelOpen] = useLocalStorage<boolean>("panelOpen", true);
   const { data } = useQuery(loadProfileData());
+  const location = useLocation();
+
   return (
-    <BrowserRouter>
-      <SidePanel
-        userName={data?.fullName || "..."}
-        isOpen={panelOpen}
-        setIsOpen={setPanelOpen}
-      />
+    <>
+      {location.pathname !== "/login" && (
+        <SidePanel
+          userName={data?.fullName || "..."}
+          isOpen={panelOpen}
+          setIsOpen={setPanelOpen}
+        />
+      )}
       <main
         className={`
           transition-all duration-300
-          ${panelOpen ? "lg:ml-80" : "lg:ml-0"}
+          ${
+            panelOpen && location.pathname !== "/login" ? "lg:ml-80" : "lg:ml-0"
+          }
         `}
       >
-        <AppRouter />;
+        <AppRouter />
       </main>
-    </BrowserRouter>
+    </>
   );
 };
+
+export const App = () => (
+  <BrowserRouter>
+    <AppContent />
+  </BrowserRouter>
+);

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:5261/api",
+  baseURL: "http://localhost:5261",
   withCredentials: true,
 });
 
@@ -69,23 +69,23 @@ api.interceptors.response.use(
 );
 
 export const apiCall = {
-  get: async <T>(url: string, params?: object): Promise<T> => {
-    const res = await api.get<T>(url, { params });
+  get: async <T>(url: string, config?: object): Promise<T> => {
+    const res = await api.get<T>(url, config);
     return res.data;
   },
 
-  post: async <T>(url: string, data?: object): Promise<T> => {
-    const res = await api.post<T>(url, data);
+  post: async <T>(url: string, data?: object, config?: object): Promise<T> => {
+    const res = await api.post<T>(url, data, config);
     return res.data;
   },
 
-  put: async <T>(url: string, data?: object): Promise<T> => {
-    const res = await api.put<T>(url, data);
+  put: async <T>(url: string, data?: object, config?: object): Promise<T> => {
+    const res = await api.put<T>(url, data, config);
     return res.data;
   },
 
-  delete: async <T>(url: string): Promise<T> => {
-    const res = await api.delete<T>(url);
+  delete: async <T>(url: string, config?: object): Promise<T> => {
+    const res = await api.delete<T>(url, config);
     return res.data;
   },
 };
