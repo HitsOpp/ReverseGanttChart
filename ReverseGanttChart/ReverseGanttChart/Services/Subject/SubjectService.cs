@@ -24,6 +24,7 @@ namespace ReverseGanttChart.Services.Subject
             {
                 Name = request.Name,
                 Description = request.Description,
+                Color = request.Color,
                 CreatedById = teacherId
             };
 
@@ -150,6 +151,7 @@ namespace ReverseGanttChart.Services.Subject
                         Id = us.Subject.Id,
                         Name = us.Subject.Name,
                         Description = us.Subject.Description,
+                        Color = us.Subject.Color,
                         CreatorName = us.Subject.CreatedBy.FullName,
                         CurrentUserRole = "Teacher",
                         StudentCount = us.Subject.UserSubjects.Count(us => us.Role == SubjectRole.Student),
@@ -168,6 +170,7 @@ namespace ReverseGanttChart.Services.Subject
                         Id = s.Id,
                         Name = s.Name,
                         Description = s.Description,
+                        Color = s.Color,
                         CreatorName = s.CreatedBy.FullName,
                         CurrentUserRole = "Teacher",
                         StudentCount = s.UserSubjects.Count(us => us.Role == SubjectRole.Student),
@@ -197,6 +200,7 @@ namespace ReverseGanttChart.Services.Subject
                         Id = us.Subject.Id,
                         Name = us.Subject.Name,
                         Description = us.Subject.Description,
+                        Color = us.Subject.Color,
                         CreatorName = us.Subject.CreatedBy.FullName,
                         CurrentUserRole = us.Role.ToString(),
                         StudentCount = us.Subject.UserSubjects.Count(us => us.Role == SubjectRole.Student),
@@ -220,6 +224,7 @@ namespace ReverseGanttChart.Services.Subject
                     Id = s.Id,
                     Name = s.Name,
                     Description = s.Description,
+                    Color = s.Color,
                     CreatorName = s.CreatedBy.FullName,
                     StudentCount = s.UserSubjects.Count(us => us.Role == SubjectRole.Student),
                     AssistCount = s.UserSubjects.Count(us => us.Role == SubjectRole.Assist),
@@ -236,12 +241,13 @@ namespace ReverseGanttChart.Services.Subject
             var subject = await _context.Subjects.FindAsync(subjectId);
             if (subject == null)
                 throw new KeyNotFoundException("Subject not found");
-            
+    
             if (subject.CreatedById != userId)
                 throw new UnauthorizedAccessException("Only subject creator can edit subject");
 
             subject.Name = request.Name;
             subject.Description = request.Description;
+            subject.Color = request.Color;
 
             _context.Subjects.Update(subject);
             await _context.SaveChangesAsync();
@@ -280,6 +286,7 @@ namespace ReverseGanttChart.Services.Subject
                 Id = subject.Id,
                 Name = subject.Name,
                 Description = subject.Description,
+                Color = subject.Color,
                 CreatorName = subject.CreatedBy.FullName,
                 StudentCount = subject.UserSubjects.Count(us => us.Role == SubjectRole.Student),
                 AssistCount = subject.UserSubjects.Count(us => us.Role == SubjectRole.Assist),
@@ -305,6 +312,7 @@ namespace ReverseGanttChart.Services.Subject
                 Id = subject.Id,
                 Name = subject.Name,
                 Description = subject.Description,
+                Color = subject.Color,
                 CreatorName = subject.CreatedBy.FullName,
                 StudentCount = subject.UserSubjects.Count(us => us.Role == SubjectRole.Student),
                 AssistCount = subject.UserSubjects.Count(us => us.Role == SubjectRole.Assist),

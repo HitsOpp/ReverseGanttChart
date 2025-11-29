@@ -10,4 +10,8 @@ public class CreateSubjectDto
 
     [StringLength(500)]
     public string Description { get; set; }
+    
+    [Required]
+    [StringLength(20)]
+    public string Color { get; set; } = "blue"; 
 }
