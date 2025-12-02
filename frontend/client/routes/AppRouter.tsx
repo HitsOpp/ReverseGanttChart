@@ -4,6 +4,7 @@ import {
   SubjectPage,
   SubjectDetailPage,
   SupportPage,
+  ProfilePage,
 } from "client/pages";
 import { ProtectedRouter } from "./ProtectedRouter";
 
@@ -11,7 +12,11 @@ export const AppRouter = () => {
   return (
     <Routes>
       <Route path="/login" element={<WelcomePage />} />
-
+      <Route path="/profile" element={
+        <ProtectedRouter>
+          <ProfilePage />
+        </ProtectedRouter>
+      } />
       <Route
         path="/subjects"
         element={
