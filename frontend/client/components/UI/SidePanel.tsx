@@ -1,6 +1,7 @@
 import { useState, type FC, useEffect } from "react";
 import { FiBook, FiHelpCircle, FiUser, FiLogOut } from "react-icons/fi";
 import { useNavigate } from "react-router";
+import { Link } from 'react-router-dom';
 
 interface SidePanelProps {
   userName: string;
@@ -109,8 +110,8 @@ export const SidePanel: FC<SidePanelProps> = ({
                 flex items-center gap-3
                 ${
                   activeItem === "subjects"
-                    ? "bg-blue-50 text-blue-700 border border-blue-200"
-                    : "hover:bg-gray-50 border border-transparent"
+                  ? "bg-blue-50 text-blue-700 border border-blue-200"
+                  : "hover:bg-gray-50 border border-transparent"
                 }
               `}
             >
@@ -125,8 +126,8 @@ export const SidePanel: FC<SidePanelProps> = ({
                 flex items-center gap-3
                 ${
                   activeItem === "support"
-                    ? "bg-blue-50 text-blue-700 border border-blue-200"
-                    : "hover:bg-gray-50 border border-transparent"
+                  ? "bg-blue-50 text-blue-700 border border-blue-200"
+                  : "hover:bg-gray-50 border border-transparent"
                 }
               `}
             >
@@ -139,15 +140,15 @@ export const SidePanel: FC<SidePanelProps> = ({
         <div className="flex-1"></div>
 
         <div className="p-6 border-t border-gray-200 bg-gray-50">
-          <a
-            href={userHref}
-            className="flex items-center gap-3 py-3 px-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors mb-3"
+          <Link
+            to="/profile"
+            className="flex items-center gap-3 py-3 px-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors mb-3 no-underline hover:no-underline"
           >
             <FiUser className="w-5 h-5 text-gray-600" />
             <div className="font-medium text-gray-900 flex-1 text-center">
               {userName}
             </div>
-          </a>
+          </Link>
 
           <button
             onClick={handleLogout}
