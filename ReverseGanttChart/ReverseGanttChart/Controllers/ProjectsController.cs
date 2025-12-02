@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReverseGanttChart.Models.Project;
+using ReverseGanttChart.Models.Project.ReverseGanttChart.Models.Project;
 using ReverseGanttChart.Services.Project;
 
 [ApiController]
@@ -14,7 +15,7 @@ public class ProjectsController : ControllerBase
     {
         _projectService = projectService;
     }
-
+    
     [HttpPost("create")]
     public async Task<IActionResult> CreateProject(Guid subjectId, [FromBody] CreateProjectDto request)
     {
@@ -40,7 +41,7 @@ public class ProjectsController : ControllerBase
         var userId = Guid.Parse(User.FindFirst("Id")?.Value);
         return await _projectService.DeleteProjectAsync(projectId, userId);
     }
-
+    
     [HttpPost("{projectId}/tasks/create")]
     public async Task<IActionResult> CreateTask(Guid projectId, [FromBody] CreateTaskDto request)
     {
@@ -87,17 +88,36 @@ public class ProjectsController : ControllerBase
         return await _projectService.DeleteStageAsync(stageId, userId);
     }
 
-    [HttpPost("stages/{stageId}/complete")]
-    public async Task<IActionResult> CompleteStage(Guid stageId)
+    [HttpPost("stages/{stageId}/complete-for-team")]
+    public async Task<IActionResult> CompleteStageForTeam(Guid stageId, Guid teamId)
     {
         var userId = Guid.Parse(User.FindFirst("Id")?.Value);
-        return await _projectService.CompleteStageAsync(stageId, userId);
+        return await _projectService.CompleteStageForTeamAsync(stageId, teamId, userId);
     }
 
-    [HttpPost("tasks/{taskId}/complete")]
-    public async Task<IActionResult> CompleteTask(Guid taskId)
+    [HttpPost("stages/{stageId}/uncomplete-for-team")]
+    public async Task<IActionResult> UncompleteStageForTeam(Guid stageId, Guid teamId)
     {
         var userId = Guid.Parse(User.FindFirst("Id")?.Value);
-        return await _projectService.CompleteTaskAsync(taskId, userId);
+        return await _projectService.UncompleteStageForTeamAsync(stageId, teamId, userId);
+    }
+
+    [HttpPost("tasks/{taskId}/complete-for-team")]
+    public async Task<IActionResult> CompleteTaskForTeam(Guid taskId, Guid teamId)
+    {
+        var userId = Guid.Parse(User.FindFirst("Id")?.Value);
+        return await _projectService.CompleteTaskForTeamAsync(taskId, teamId, userId);
+    }
+
+    [HttpGet("{projectId}/team-progress/{teamId}")]
+    public async Task<IActionResult> GetTeamProjectProgress(Guid projectId, Guid teamId)
+    {
+        return await _projectService.GetTeamProjectProgressAsync(projectId, teamId);
+    }
+
+    [HttpGet("tasks/{taskId}/team-progress/{teamId}")]
+    public async Task<IActionResult> GetTeamTaskProgress(Guid taskId, Guid teamId)
+    {
+        return await _projectService.GetTeamTaskProgressAsync(taskId, teamId);
     }
 }

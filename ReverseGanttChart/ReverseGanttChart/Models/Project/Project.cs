@@ -1,3 +1,5 @@
+using ReverseGanttChart.Models.Project.ReverseGanttChart.Models.Project;
+
 namespace ReverseGanttChart.Models.Project
 {
     public class Project
@@ -7,7 +9,6 @@ namespace ReverseGanttChart.Models.Project
         public string Description { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        public ProjectStatus Status { get; set; } = ProjectStatus.NotStarted;
         public Guid SubjectId { get; set; }
         public Subject Subject { get; set; }
         public Guid CreatedById { get; set; }
@@ -16,10 +17,5 @@ namespace ReverseGanttChart.Models.Project
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 
-    public enum ProjectStatus
-    {
-        NotStarted = 0,
-        InProgress = 1,
-        Completed = 2
-    }
+    
 }

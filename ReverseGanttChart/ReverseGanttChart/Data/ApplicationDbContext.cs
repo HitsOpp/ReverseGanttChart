@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using ReverseGanttChart.Models;
 using ReverseGanttChart.Models.Team;
 using ReverseGanttChart.Models.Project;
+using ReverseGanttChart.Models.Project.ReverseGanttChart.Models.Project;
 
 namespace ReverseGanttChart.Data;
 public class ApplicationDbContext : DbContext
@@ -16,16 +17,17 @@ public class ApplicationDbContext : DbContext
     public DbSet<Team> Teams { get; set; }
     public DbSet<TeamMember> TeamMembers { get; set; }
     
-    // Project related entities
     public DbSet<Project> Projects { get; set; }
     public DbSet<ProjectTask> ProjectTasks { get; set; }
     public DbSet<TaskStage> TaskStages { get; set; }
+    
+    public DbSet<TeamTaskProgress> TeamTaskProgress { get; set; }
+    public DbSet<TeamStageProgress> TeamStageProgress { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         
-        // UserSubject configuration
         modelBuilder.Entity<UserSubject>()
             .HasKey(us => us.Id);
 
@@ -43,7 +45,6 @@ public class ApplicationDbContext : DbContext
             .HasIndex(us => new { us.UserId, us.SubjectId })
             .IsUnique();
 
-        // Subject configuration
         modelBuilder.Entity<Subject>()
             .HasOne(s => s.CreatedBy)
             .WithMany(u => u.CreatedSubjects)
@@ -56,7 +57,6 @@ public class ApplicationDbContext : DbContext
             .IsRequired()
             .HasDefaultValue("blue");
         
-        // Team configuration
         modelBuilder.Entity<Team>()
             .HasKey(t => t.Id);
 
@@ -72,7 +72,6 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(t => t.CreatedById)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // TeamMember configuration
         modelBuilder.Entity<TeamMember>()
             .HasKey(tm => tm.Id);
 
@@ -92,7 +91,6 @@ public class ApplicationDbContext : DbContext
             .HasIndex(tm => new { tm.UserId, tm.TeamId })
             .IsUnique();
 
-        // Project configuration
         modelBuilder.Entity<Project>(entity =>
         {
             entity.HasKey(p => p.Id);
@@ -107,24 +105,17 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey(p => p.CreatedById)
                 .OnDelete(DeleteBehavior.Restrict);
         });
-
-        // ProjectTask configuration
+        
         modelBuilder.Entity<ProjectTask>(entity =>
         {
             entity.HasKey(t => t.Id);
             
             entity.HasOne(t => t.Project)
-                .WithMany()
+                .WithMany(p => p.Tasks)
                 .HasForeignKey(t => t.ProjectId)
                 .OnDelete(DeleteBehavior.Cascade);
-                
-            entity.HasOne(t => t.ParentTask)
-                .WithMany(t => t.Subtasks)
-                .HasForeignKey(t => t.ParentTaskId)
-                .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // TaskStage configuration
         modelBuilder.Entity<TaskStage>(entity =>
         {
             entity.HasKey(ts => ts.Id);
@@ -133,11 +124,52 @@ public class ApplicationDbContext : DbContext
                 .WithMany(t => t.Stages)
                 .HasForeignKey(ts => ts.TaskId)
                 .OnDelete(DeleteBehavior.Cascade);
-                
-            entity.HasOne(ts => ts.CompletedBy)
+        });
+
+        modelBuilder.Entity<TeamTaskProgress>(entity =>
+        {
+            entity.HasKey(ttp => ttp.Id);
+            
+            entity.HasOne(ttp => ttp.Task)
                 .WithMany()
-                .HasForeignKey(ts => ts.CompletedById)
+                .HasForeignKey(ttp => ttp.TaskId)
+                .OnDelete(DeleteBehavior.Cascade);
+                
+            entity.HasOne(ttp => ttp.Team)
+                .WithMany()
+                .HasForeignKey(ttp => ttp.TeamId)
+                .OnDelete(DeleteBehavior.Cascade);
+                
+            entity.HasOne(ttp => ttp.CompletedBy)
+                .WithMany()
+                .HasForeignKey(ttp => ttp.CompletedById)
                 .OnDelete(DeleteBehavior.Restrict);
+                
+            entity.HasIndex(ttp => new { ttp.TaskId, ttp.TeamId })
+                .IsUnique();
+        });
+
+        modelBuilder.Entity<TeamStageProgress>(entity =>
+        {
+            entity.HasKey(tsp => tsp.Id);
+            
+            entity.HasOne(tsp => tsp.Stage)
+                .WithMany()
+                .HasForeignKey(tsp => tsp.StageId)
+                .OnDelete(DeleteBehavior.Cascade);
+                
+            entity.HasOne(tsp => tsp.Team)
+                .WithMany()
+                .HasForeignKey(tsp => tsp.TeamId)
+                .OnDelete(DeleteBehavior.Cascade);
+                
+            entity.HasOne(tsp => tsp.CompletedBy)
+                .WithMany()
+                .HasForeignKey(tsp => tsp.CompletedById)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            entity.HasIndex(tsp => new { tsp.StageId, tsp.TeamId })
+                .IsUnique();
         });
     }
 }

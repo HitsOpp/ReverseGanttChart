@@ -15,11 +15,8 @@ namespace ReverseGanttChart.Models.Project
         public string Description { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        public ProjectStatus Status { get; set; }
         public string CreatedByName { get; set; }
         public int TaskCount { get; set; }
-        public int CompletedTaskCount { get; set; }
         public DateTime CreatedAt { get; set; }
-        public double Progress => TaskCount > 0 ? (double)CompletedTaskCount / TaskCount * 100 : 0;
     }
 }

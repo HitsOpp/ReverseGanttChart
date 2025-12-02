@@ -6,6 +6,7 @@ using ReverseGanttChart.Data;
 using ReverseGanttChart.Services;
 using ReverseGanttChart.Services.JWT;
 using System.Text;
+using System.Text.Json.Serialization;
 using ReverseGanttChart.Services.Project;
 using ReverseGanttChart.Services.Subject;
 using ReverseGanttChart.Services.Team;
@@ -25,7 +26,13 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.WriteIndented = true;
+    });
 builder.Services.AddEndpointsApiExplorer();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 

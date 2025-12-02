@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ReverseGanttChart.Models.Project;
+using ReverseGanttChart.Models.Project.ReverseGanttChart.Models.Project;
 
 namespace ReverseGanttChart.Services.Project
 {
@@ -19,7 +20,11 @@ namespace ReverseGanttChart.Services.Project
         Task<IActionResult> GetTaskStagesAsync(Guid taskId);
         Task<IActionResult> DeleteStageAsync(Guid stageId, Guid userId);
         
-        Task<IActionResult> CompleteStageAsync(Guid stageId, Guid userId);
-        Task<IActionResult> CompleteTaskAsync(Guid taskId, Guid userId);
+        Task<IActionResult> CompleteStageForTeamAsync(Guid stageId, Guid teamId, Guid userId);
+        Task<IActionResult> UncompleteStageForTeamAsync(Guid stageId, Guid teamId, Guid userId);
+        Task<IActionResult> CompleteTaskForTeamAsync(Guid taskId, Guid teamId, Guid userId);
+        
+        Task<IActionResult> GetTeamProjectProgressAsync(Guid projectId, Guid teamId);
+        Task<IActionResult> GetTeamTaskProgressAsync(Guid taskId, Guid teamId);
     }
 }

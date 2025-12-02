@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using ReverseGanttChart.Data;
 using ReverseGanttChart.Models;
 using ReverseGanttChart.Models.Project;
+using ReverseGanttChart.Models.Project.ReverseGanttChart.Models.Project;
 
 namespace ReverseGanttChart.Services.Project
 {
@@ -14,7 +15,7 @@ namespace ReverseGanttChart.Services.Project
         {
             _context = context;
         }
-        
+
         public async Task<IActionResult> CreateProjectAsync(Guid subjectId, CreateProjectDto request, Guid userId)
         {
             var subject = await _context.Subjects.FindAsync(subjectId);
@@ -37,6 +38,8 @@ namespace ReverseGanttChart.Services.Project
             _context.Projects.Add(project);
             await _context.SaveChangesAsync();
 
+            await InitializeTeamProgressForProjectAsync(project.Id, subjectId);
+
             var projectDto = await GetProjectDtoAsync(project.Id);
             return new OkObjectResult(projectDto);
         }
@@ -53,10 +56,8 @@ namespace ReverseGanttChart.Services.Project
                     Description = p.Description,
                     StartDate = p.StartDate,
                     EndDate = p.EndDate,
-                    Status = p.Status,
                     CreatedByName = p.CreatedBy.FullName,
                     TaskCount = _context.ProjectTasks.Count(t => t.ProjectId == p.Id),
-                    CompletedTaskCount = _context.ProjectTasks.Count(t => t.ProjectId == p.Id && t.Status == ProjectTaskStatus.Completed),
                     CreatedAt = p.CreatedAt
                 })
                 .ToListAsync();
@@ -97,27 +98,19 @@ namespace ReverseGanttChart.Services.Project
             if (!await CanUserManageProjectsAsync(userId, project.SubjectId))
                 return new UnauthorizedObjectResult("Only teachers and assists can create tasks");
 
-            if (request.ParentTaskId.HasValue)
-            {
-                var parentTask = await _context.ProjectTasks
-                    .FirstOrDefaultAsync(t => t.Id == request.ParentTaskId.Value && t.ProjectId == projectId);
-                
-                if (parentTask == null)
-                    return new BadRequestObjectResult("Parent task not found or does not belong to this project");
-            }
-
             var task = new ProjectTask
             {
                 Name = request.Name,
                 Description = request.Description,
                 DueDate = request.DueDate,
                 Priority = request.Priority,
-                ProjectId = projectId,
-                ParentTaskId = request.ParentTaskId
+                ProjectId = projectId
             };
 
             _context.ProjectTasks.Add(task);
             await _context.SaveChangesAsync();
+
+            await InitializeTeamProgressForTaskAsync(task.Id, project.SubjectId);
 
             var taskDto = await GetTaskDtoAsync(task.Id);
             return new OkObjectResult(taskDto);
@@ -127,34 +120,117 @@ namespace ReverseGanttChart.Services.Project
         {
             var tasks = await _context.ProjectTasks
                 .Where(t => t.ProjectId == projectId)
-                .Include(t => t.ParentTask)
-                .Select(t => new ProjectTaskDto
+                .Select(t => new
                 {
                     Id = t.Id,
                     Name = t.Name,
                     Description = t.Description,
                     DueDate = t.DueDate,
-                    CompletedDate = t.CompletedDate,
-                    Status = t.Status,
                     Priority = t.Priority,
-                    ParentTaskId = t.ParentTaskId,
-                    ParentTaskName = t.ParentTask != null ? t.ParentTask.Name : null,
-                    StageCount = _context.TaskStages.Count(s => s.TaskId == t.Id),
-                    CompletedStageCount = _context.TaskStages.Count(s => s.TaskId == t.Id && s.IsCompleted),
-                    CreatedAt = t.CreatedAt
+                    CreatedAt = t.CreatedAt,
+                    TeamProgress = _context.Teams
+                        .Where(team => team.SubjectId == t.Project.SubjectId)
+                        .Select(team => new
+                        {
+                            TeamId = team.Id,
+                            TeamName = team.Name,
+                            Status = _context.TeamTaskProgress
+                                .Where(ttp => ttp.TaskId == t.Id && ttp.TeamId == team.Id)
+                                .Select(ttp => ttp.Status)
+                                .FirstOrDefault(),
+                            CompletedDate = _context.TeamTaskProgress
+                                .Where(ttp => ttp.TaskId == t.Id && ttp.TeamId == team.Id)
+                                .Select(ttp => ttp.CompletedDate)
+                                .FirstOrDefault(),
+                            CompletedByName = _context.TeamTaskProgress
+                                .Where(ttp => ttp.TaskId == t.Id && ttp.TeamId == team.Id)
+                                .Select(ttp => ttp.CompletedBy.FullName)
+                                .FirstOrDefault(),
+                            CompletedStageCount = _context.TeamStageProgress
+                                .Count(tsp => tsp.Stage.TaskId == t.Id && tsp.TeamId == team.Id && tsp.IsCompleted),
+                            TotalStageCount = _context.TaskStages.Count(s => s.TaskId == t.Id)
+                        }).ToList()
                 })
                 .ToListAsync();
 
-            return new OkObjectResult(tasks);
+            var result = tasks.Select(t => new
+            {
+                t.Id,
+                t.Name,
+                t.Description,
+                t.DueDate,
+                t.Priority,
+                t.CreatedAt,
+                TeamProgress = t.TeamProgress.Select(tp => new
+                {
+                    tp.TeamId,
+                    tp.TeamName,
+                    tp.Status,
+                    tp.CompletedDate,
+                    tp.CompletedByName,
+                    tp.CompletedStageCount,
+                    tp.TotalStageCount,
+                    Progress = tp.TotalStageCount > 0 ? (double)tp.CompletedStageCount / tp.TotalStageCount * 100 : 0
+                }).ToList()
+            }).ToList();
+
+            return new OkObjectResult(result);
         }
 
         public async Task<IActionResult> GetTaskAsync(Guid taskId)
         {
-            var taskDto = await GetTaskDtoAsync(taskId);
-            if (taskDto == null)
+            var task = await _context.ProjectTasks
+                .Include(t => t.Project)
+                .FirstOrDefaultAsync(t => t.Id == taskId);
+
+            if (task == null)
                 return new NotFoundObjectResult("Task not found");
 
-            return new OkObjectResult(taskDto);
+            var teamProgress = await _context.Teams
+                .Where(team => team.SubjectId == task.Project.SubjectId)
+                .Select(team => new
+                {
+                    TeamId = team.Id,
+                    TeamName = team.Name,
+                    Status = _context.TeamTaskProgress
+                        .Where(ttp => ttp.TaskId == taskId && ttp.TeamId == team.Id)
+                        .Select(ttp => ttp.Status)
+                        .FirstOrDefault(),
+                    CompletedDate = _context.TeamTaskProgress
+                        .Where(ttp => ttp.TaskId == taskId && ttp.TeamId == team.Id)
+                        .Select(ttp => ttp.CompletedDate)
+                        .FirstOrDefault(),
+                    CompletedByName = _context.TeamTaskProgress
+                        .Where(ttp => ttp.TaskId == taskId && ttp.TeamId == team.Id)
+                        .Select(ttp => ttp.CompletedBy.FullName)
+                        .FirstOrDefault(),
+                    CompletedStageCount = _context.TeamStageProgress
+                        .Count(tsp => tsp.Stage.TaskId == taskId && tsp.TeamId == team.Id && tsp.IsCompleted),
+                    TotalStageCount = _context.TaskStages.Count(s => s.TaskId == taskId)
+                }).ToListAsync();
+
+            var result = new
+            {
+                task.Id,
+                task.Name,
+                task.Description,
+                task.DueDate,
+                task.Priority,
+                task.CreatedAt,
+                TeamProgress = teamProgress.Select(tp => new
+                {
+                    tp.TeamId,
+                    tp.TeamName,
+                    tp.Status,
+                    tp.CompletedDate,
+                    tp.CompletedByName,
+                    tp.CompletedStageCount,
+                    tp.TotalStageCount,
+                    Progress = tp.TotalStageCount > 0 ? (double)tp.CompletedStageCount / tp.TotalStageCount * 100 : 0
+                }).ToList()
+            };
+
+            return new OkObjectResult(result);
         }
 
         public async Task<IActionResult> DeleteTaskAsync(Guid taskId, Guid userId)
@@ -167,10 +243,6 @@ namespace ReverseGanttChart.Services.Project
 
             if (!await CanUserManageProjectsAsync(userId, task.Project.SubjectId))
                 return new UnauthorizedObjectResult("Only teachers and assists can delete tasks");
-
-            var hasSubtasks = await _context.ProjectTasks.AnyAsync(t => t.ParentTaskId == taskId);
-            if (hasSubtasks)
-                return new BadRequestObjectResult("Cannot delete task that has subtasks. Delete subtasks first.");
 
             _context.ProjectTasks.Remove(task);
             await _context.SaveChangesAsync();
@@ -200,6 +272,8 @@ namespace ReverseGanttChart.Services.Project
             _context.TaskStages.Add(stage);
             await _context.SaveChangesAsync();
 
+            await InitializeTeamProgressForStageAsync(stage.Id, task.Project.SubjectId);
+
             var stageDto = await GetStageDtoAsync(stage.Id);
             return new OkObjectResult(stageDto);
         }
@@ -208,21 +282,51 @@ namespace ReverseGanttChart.Services.Project
         {
             var stages = await _context.TaskStages
                 .Where(s => s.TaskId == taskId)
-                .Include(s => s.CompletedBy)
-                .Select(s => new StageDto
+                .Select(s => new
                 {
                     Id = s.Id,
                     Name = s.Name,
                     Description = s.Description,
                     EstimatedEffort = s.EstimatedEffort,
-                    IsCompleted = s.IsCompleted,
-                    CompletedAt = s.CompletedAt,
-                    CompletedByName = s.CompletedBy != null ? s.CompletedBy.FullName : null,
-                    CreatedAt = s.CreatedAt
+                    CreatedAt = s.CreatedAt,
+                    TeamProgress = _context.Teams
+                        .Where(team => team.SubjectId == s.Task.Project.SubjectId)
+                        .Select(team => new
+                        {
+                            TeamId = team.Id,
+                            TeamName = team.Name,
+                            IsCompleted = _context.TeamStageProgress
+                                .Any(tsp => tsp.StageId == s.Id && tsp.TeamId == team.Id && tsp.IsCompleted),
+                            CompletedAt = _context.TeamStageProgress
+                                .Where(tsp => tsp.StageId == s.Id && tsp.TeamId == team.Id)
+                                .Select(tsp => tsp.CompletedAt)
+                                .FirstOrDefault(),
+                            CompletedByName = _context.TeamStageProgress
+                                .Where(tsp => tsp.StageId == s.Id && tsp.TeamId == team.Id)
+                                .Select(tsp => tsp.CompletedBy.FullName)
+                                .FirstOrDefault()
+                        }).ToList()
                 })
                 .ToListAsync();
 
-            return new OkObjectResult(stages);
+            var result = stages.Select(s => new
+            {
+                s.Id,
+                s.Name,
+                s.Description,
+                s.EstimatedEffort,
+                s.CreatedAt,
+                TeamProgress = s.TeamProgress.Select(tp => new
+                {
+                    tp.TeamId,
+                    tp.TeamName,
+                    tp.IsCompleted,
+                    tp.CompletedAt,
+                    tp.CompletedByName
+                }).ToList()
+            }).ToList();
+
+            return new OkObjectResult(result);
         }
 
         public async Task<IActionResult> DeleteStageAsync(Guid stageId, Guid userId)
@@ -243,7 +347,7 @@ namespace ReverseGanttChart.Services.Project
             return new OkObjectResult(new { message = "Stage deleted successfully" });
         }
 
-        public async Task<IActionResult> CompleteStageAsync(Guid stageId, Guid userId)
+        public async Task<IActionResult> CompleteStageForTeamAsync(Guid stageId, Guid teamId, Guid userId)
         {
             var stage = await _context.TaskStages
                 .Include(s => s.Task)
@@ -255,19 +359,71 @@ namespace ReverseGanttChart.Services.Project
             if (!await CanUserManageProjectsAsync(userId, stage.Task.Project.SubjectId))
                 return new UnauthorizedObjectResult("Only teachers and assists can complete stages");
 
-            stage.IsCompleted = true;
-            stage.CompletedAt = DateTime.UtcNow;
-            stage.CompletedById = userId;
+            var team = await _context.Teams.FindAsync(teamId);
+            if (team == null || team.SubjectId != stage.Task.Project.SubjectId)
+                return new NotFoundObjectResult("Team not found or not in the same subject");
 
-            _context.TaskStages.Update(stage);
+            var teamStageProgress = await _context.TeamStageProgress
+                .FirstOrDefaultAsync(tsp => tsp.StageId == stageId && tsp.TeamId == teamId);
+
+            if (teamStageProgress == null)
+            {
+                teamStageProgress = new TeamStageProgress
+                {
+                    StageId = stageId,
+                    TeamId = teamId,
+                    IsCompleted = true,
+                    CompletedAt = DateTime.UtcNow,
+                    CompletedById = userId
+                };
+                _context.TeamStageProgress.Add(teamStageProgress);
+            }
+            else
+            {
+                teamStageProgress.IsCompleted = true;
+                teamStageProgress.CompletedAt = DateTime.UtcNow;
+                teamStageProgress.CompletedById = userId;
+                _context.TeamStageProgress.Update(teamStageProgress);
+            }
+
             await _context.SaveChangesAsync();
 
-            await CheckAndUpdateTaskCompletionAsync(stage.TaskId);
+            await CheckAndUpdateTaskCompletionForTeamAsync(stage.TaskId, teamId);
 
-            return new OkObjectResult(new { message = "Stage marked as completed" });
+            return new OkObjectResult(new { message = $"Stage completed for team {team.Name}" });
         }
 
-        public async Task<IActionResult> CompleteTaskAsync(Guid taskId, Guid userId)
+        public async Task<IActionResult> UncompleteStageForTeamAsync(Guid stageId, Guid teamId, Guid userId)
+        {
+            var stage = await _context.TaskStages
+                .Include(s => s.Task)
+                    .ThenInclude(t => t.Project)
+                .FirstOrDefaultAsync(s => s.Id == stageId);
+            if (stage == null)
+                return new NotFoundObjectResult("Stage not found");
+
+            if (!await CanUserManageProjectsAsync(userId, stage.Task.Project.SubjectId))
+                return new UnauthorizedObjectResult("Only teachers and assists can uncomplete stages");
+
+            var teamStageProgress = await _context.TeamStageProgress
+                .FirstOrDefaultAsync(tsp => tsp.StageId == stageId && tsp.TeamId == teamId);
+
+            if (teamStageProgress == null)
+                return new NotFoundObjectResult("Stage progress not found for this team");
+
+            teamStageProgress.IsCompleted = false;
+            teamStageProgress.CompletedAt = null;
+            teamStageProgress.CompletedById = null;
+
+            _context.TeamStageProgress.Update(teamStageProgress);
+            await _context.SaveChangesAsync();
+
+            await CheckAndUpdateTaskCompletionForTeamAsync(stage.TaskId, teamId);
+
+            return new OkObjectResult(new { message = "Stage uncompleted for team" });
+        }
+
+        public async Task<IActionResult> CompleteTaskForTeamAsync(Guid taskId, Guid teamId, Guid userId)
         {
             var task = await _context.ProjectTasks
                 .Include(t => t.Project)
@@ -278,15 +434,230 @@ namespace ReverseGanttChart.Services.Project
             if (!await CanUserManageProjectsAsync(userId, task.Project.SubjectId))
                 return new UnauthorizedObjectResult("Only teachers and assists can complete tasks");
 
-            task.Status = ProjectTaskStatus.Completed;
-            task.CompletedDate = DateTime.UtcNow;
+            var team = await _context.Teams.FindAsync(teamId);
+            if (team == null || team.SubjectId != task.Project.SubjectId)
+                return new NotFoundObjectResult("Team not found or not in the same subject");
 
-            _context.ProjectTasks.Update(task);
+            var allStagesCompleted = await _context.TeamStageProgress
+                .Where(tsp => tsp.Stage.TaskId == taskId && tsp.TeamId == teamId)
+                .AllAsync(tsp => tsp.IsCompleted);
+
+            if (!allStagesCompleted)
+                return new BadRequestObjectResult("Cannot complete task: not all stages are completed for this team");
+
+            var teamTaskProgress = await _context.TeamTaskProgress
+                .FirstOrDefaultAsync(ttp => ttp.TaskId == taskId && ttp.TeamId == teamId);
+
+            if (teamTaskProgress == null)
+            {
+                teamTaskProgress = new TeamTaskProgress
+                {
+                    TaskId = taskId,
+                    TeamId = teamId,
+                    Status = ProjectTaskStatus.Completed,
+                    CompletedDate = DateTime.UtcNow,
+                    CompletedById = userId
+                };
+                _context.TeamTaskProgress.Add(teamTaskProgress);
+            }
+            else
+            {
+                teamTaskProgress.Status = ProjectTaskStatus.Completed;
+                teamTaskProgress.CompletedDate = DateTime.UtcNow;
+                teamTaskProgress.CompletedById = userId;
+                _context.TeamTaskProgress.Update(teamTaskProgress);
+            }
+
             await _context.SaveChangesAsync();
 
-            await CheckAndUpdateProjectCompletionAsync(task.ProjectId);
+            return new OkObjectResult(new { message = $"Task completed for team {team.Name}" });
+        }
 
-            return new OkObjectResult(new { message = "Task marked as completed" });
+        public async Task<IActionResult> GetTeamProjectProgressAsync(Guid projectId, Guid teamId)
+        {
+            var project = await _context.Projects
+                .Where(p => p.Id == projectId)
+                .Select(p => new
+                {
+                    p.Id,
+                    p.Name,
+                    p.Description,
+                    p.SubjectId
+                })
+                .FirstOrDefaultAsync();
+            
+            if (project == null)
+                return new NotFoundObjectResult("Project not found");
+
+            var team = await _context.Teams
+                .Where(t => t.Id == teamId)
+                .Select(t => new { t.Id, t.Name, t.SubjectId })
+                .FirstOrDefaultAsync();
+            
+            if (team == null || team.SubjectId != project.SubjectId)
+                return new NotFoundObjectResult("Team not found or not in the same subject");
+
+            var tasks = await _context.ProjectTasks
+                .Where(t => t.ProjectId == projectId)
+                .Select(t => new
+                {
+                    Task = new
+                    {
+                        t.Id,
+                        t.Name,
+                        t.Description,
+                        t.DueDate,
+                        t.Priority
+                    },
+                    TaskProgress = _context.TeamTaskProgress
+                        .Where(ttp => ttp.TaskId == t.Id && ttp.TeamId == teamId)
+                        .Select(ttp => new
+                        {
+                            ttp.Status,
+                            ttp.CompletedDate,
+                            CompletedByName = ttp.CompletedBy != null ? ttp.CompletedBy.FullName : null
+                        })
+                        .FirstOrDefault(),
+                    CompletedStages = _context.TeamStageProgress
+                        .Count(tsp => tsp.Stage.TaskId == t.Id && tsp.TeamId == teamId && tsp.IsCompleted),
+                    TotalStages = _context.TaskStages.Count(s => s.TaskId == t.Id)
+                })
+                .ToListAsync();
+
+            var tasksDto = tasks.Select(t => new
+            {
+                t.Task,
+                TaskProgress = t.TaskProgress,
+                t.CompletedStages,
+                t.TotalStages,
+                Progress = t.TotalStages > 0 ? (double)t.CompletedStages / t.TotalStages * 100 : 0,
+            }).ToList();
+
+            var overallProgress = tasksDto.Any() ? tasksDto.Average(t => t.Progress) : 0;
+
+            var result = new
+            {
+                Project = new
+                {
+                    project.Id,
+                    project.Name,
+                    project.Description
+                },
+                Team = new
+                {
+                    team.Id,
+                    team.Name
+                },
+                Tasks = tasksDto,
+                OverallProgress = overallProgress
+            };
+
+            return new OkObjectResult(result);
+        }
+
+        public async Task<IActionResult> GetTeamTaskProgressAsync(Guid taskId, Guid teamId)
+        {
+            var task = await _context.ProjectTasks
+                .Where(t => t.Id == taskId)
+                .Select(t => new
+                {
+                    t.Id,
+                    t.Name,
+                    t.Description,
+                    t.DueDate,
+                    t.Priority,
+                    ProjectSubjectId = t.Project.SubjectId
+                })
+                .FirstOrDefaultAsync();
+            
+            if (task == null)
+                return new NotFoundObjectResult("Task not found");
+
+            var team = await _context.Teams
+                .Where(t => t.Id == teamId)
+                .Select(t => new { t.Id, t.Name })
+                .FirstOrDefaultAsync();
+            
+            if (team == null || !await _context.Teams.AnyAsync(t => t.Id == teamId && t.SubjectId == task.ProjectSubjectId))
+                return new NotFoundObjectResult("Team not found or not in the same subject");
+
+            var taskProgress = await _context.TeamTaskProgress
+                .Where(ttp => ttp.TaskId == taskId && ttp.TeamId == teamId)
+                .Select(ttp => new
+                {
+                    ttp.Status,
+                    ttp.CompletedDate,
+                    CompletedByName = ttp.CompletedBy != null ? ttp.CompletedBy.FullName : null
+                })
+                .FirstOrDefaultAsync();
+
+            var stages = await _context.TaskStages
+                .Where(s => s.TaskId == taskId)
+                .Select(s => new
+                {
+                    Stage = new
+                    {
+                        s.Id,
+                        s.Name,
+                        s.Description,
+                        s.EstimatedEffort
+                    },
+                    Progress = _context.TeamStageProgress
+                        .Where(tsp => tsp.StageId == s.Id && tsp.TeamId == teamId)
+                        .Select(tsp => new
+                        {
+                            tsp.IsCompleted,
+                            tsp.CompletedAt,
+                            CompletedByName = tsp.CompletedBy != null ? tsp.CompletedBy.FullName : null
+                        })
+                        .FirstOrDefault()
+                })
+                .ToListAsync();
+
+            var completedStages = stages.Count(s => s.Progress != null && s.Progress.IsCompleted);
+            var totalStages = stages.Count;
+            var progress = totalStages > 0 ? (double)completedStages / totalStages * 100 : 0;
+            
+            var result = new
+            {
+                Task = new
+                {
+                    task.Id,
+                    task.Name,
+                    task.Description,
+                    task.DueDate,
+                    task.Priority
+                },
+                Team = new
+                {
+                    team.Id,
+                    team.Name
+                },
+                TaskProgress = taskProgress != null ? new
+                {
+                    Status = taskProgress.Status,
+                    CompletedDate = taskProgress.CompletedDate,
+                    CompletedByName = taskProgress.CompletedByName
+                } : null,
+                Stages = stages.Select(s => new
+                {
+                    Stage = s.Stage,
+                    Progress = s.Progress != null ? new
+                    {
+                        s.Progress.IsCompleted,
+                        s.Progress.CompletedAt,
+                        s.Progress.CompletedByName
+                    } : new
+                    {
+                        IsCompleted = false,
+                        CompletedAt = (DateTime?)null,
+                        CompletedByName = (string)null
+                    }
+                }),
+                Progress = progress
+            };
+
+            return new OkObjectResult(result);
         }
 
         private async Task<bool> CanUserManageProjectsAsync(Guid userId, Guid subjectId)
@@ -304,50 +675,113 @@ namespace ReverseGanttChart.Services.Project
             return userSubject != null;
         }
 
-        private async Task CheckAndUpdateTaskCompletionAsync(Guid taskId)
+        private async Task InitializeTeamProgressForProjectAsync(Guid projectId, Guid subjectId)
         {
-            var task = await _context.ProjectTasks
-                .FirstOrDefaultAsync(t => t.Id == taskId);
+            var teams = await _context.Teams
+                .Where(t => t.SubjectId == subjectId)
+                .ToListAsync();
 
-            if (task != null)
+            var tasks = await _context.ProjectTasks
+                .Where(t => t.ProjectId == projectId)
+                .ToListAsync();
+
+            foreach (var team in teams)
             {
-                var allStagesCompleted = await _context.TaskStages
-                    .Where(s => s.TaskId == taskId)
-                    .AllAsync(s => s.IsCompleted);
-
-                var allSubtasksCompleted = await _context.ProjectTasks
-                    .Where(st => st.ParentTaskId == taskId)
-                    .AllAsync(st => st.Status == ProjectTaskStatus.Completed);
-
-                if (allStagesCompleted && allSubtasksCompleted)
+                foreach (var task in tasks)
                 {
-                    task.Status = ProjectTaskStatus.Completed;
-                    task.CompletedDate = DateTime.UtcNow;
+                    var existingProgress = await _context.TeamTaskProgress
+                        .AnyAsync(ttp => ttp.TaskId == task.Id && ttp.TeamId == team.Id);
+
+                    if (!existingProgress)
+                    {
+                        var teamTaskProgress = new TeamTaskProgress
+                        {
+                            TaskId = task.Id,
+                            TeamId = team.Id,
+                            Status = ProjectTaskStatus.Pending
+                        };
+                        _context.TeamTaskProgress.Add(teamTaskProgress);
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task InitializeTeamProgressForTaskAsync(Guid taskId, Guid subjectId)
+        {
+            var teams = await _context.Teams
+                .Where(t => t.SubjectId == subjectId)
+                .ToListAsync();
+
+            foreach (var team in teams)
+            {
+                var existingProgress = await _context.TeamTaskProgress
+                    .AnyAsync(ttp => ttp.TaskId == taskId && ttp.TeamId == team.Id);
+
+                if (!existingProgress)
+                {
+                    var teamTaskProgress = new TeamTaskProgress
+                    {
+                        TaskId = taskId,
+                        TeamId = team.Id,
+                        Status = ProjectTaskStatus.Pending
+                    };
+                    _context.TeamTaskProgress.Add(teamTaskProgress);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task InitializeTeamProgressForStageAsync(Guid stageId, Guid subjectId)
+        {
+            var teams = await _context.Teams
+                .Where(t => t.SubjectId == subjectId)
+                .ToListAsync();
+
+            foreach (var team in teams)
+            {
+                var existingProgress = await _context.TeamStageProgress
+                    .AnyAsync(tsp => tsp.StageId == stageId && tsp.TeamId == team.Id);
+
+                if (!existingProgress)
+                {
+                    var teamStageProgress = new TeamStageProgress
+                    {
+                        StageId = stageId,
+                        TeamId = team.Id,
+                        IsCompleted = false
+                    };
+                    _context.TeamStageProgress.Add(teamStageProgress);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task CheckAndUpdateTaskCompletionForTeamAsync(Guid taskId, Guid teamId)
+        {
+            var teamTaskProgress = await _context.TeamTaskProgress
+                .FirstOrDefaultAsync(ttp => ttp.TaskId == taskId && ttp.TeamId == teamId);
+
+            if (teamTaskProgress != null && teamTaskProgress.Status != ProjectTaskStatus.Completed)
+            {
+                var allStagesCompleted = await _context.TeamStageProgress
+                    .Where(tsp => tsp.Stage.TaskId == taskId && tsp.TeamId == teamId)
+                    .AllAsync(tsp => tsp.IsCompleted);
+
+                if (allStagesCompleted)
+                {
+                    teamTaskProgress.Status = ProjectTaskStatus.InProgress;
                 }
                 else
                 {
-                    task.Status = allStagesCompleted || allSubtasksCompleted ? ProjectTaskStatus.InProgress : ProjectTaskStatus.Pending;
+                    teamTaskProgress.Status = allStagesCompleted ? 
+                        ProjectTaskStatus.InProgress : ProjectTaskStatus.Pending;
                 }
 
-                _context.ProjectTasks.Update(task);
-                await _context.SaveChangesAsync();
-
-                await CheckAndUpdateProjectCompletionAsync(task.ProjectId);
-            }
-        }
-
-        private async Task CheckAndUpdateProjectCompletionAsync(Guid projectId)
-        {
-            var project = await _context.Projects.FindAsync(projectId);
-            if (project != null)
-            {
-                var allTasksCompleted = await _context.ProjectTasks
-                    .Where(t => t.ProjectId == projectId && t.ParentTaskId == null) 
-                    .AllAsync(t => t.Status == ProjectTaskStatus.Completed);
-
-                project.Status = allTasksCompleted ? ProjectStatus.Completed : ProjectStatus.InProgress;
-
-                _context.Projects.Update(project);
+                _context.TeamTaskProgress.Update(teamTaskProgress);
                 await _context.SaveChangesAsync();
             }
         }
@@ -368,10 +802,8 @@ namespace ReverseGanttChart.Services.Project
                 Description = project.Description,
                 StartDate = project.StartDate,
                 EndDate = project.EndDate,
-                Status = project.Status,
                 CreatedByName = project.CreatedBy.FullName,
-                TaskCount = await _context.ProjectTasks.CountAsync(t => t.ProjectId == projectId && t.ParentTaskId == null), 
-                CompletedTaskCount = await _context.ProjectTasks.CountAsync(t => t.ProjectId == projectId && t.ParentTaskId == null && t.Status == ProjectTaskStatus.Completed),
+                TaskCount = await _context.ProjectTasks.CountAsync(t => t.ProjectId == projectId),
                 CreatedAt = project.CreatedAt
             };
         }
@@ -379,11 +811,46 @@ namespace ReverseGanttChart.Services.Project
         private async Task<ProjectTaskDto> GetTaskDtoAsync(Guid taskId)
         {
             var task = await _context.ProjectTasks
-                .Include(t => t.ParentTask)
+                .Include(t => t.Project)
                 .FirstOrDefaultAsync(t => t.Id == taskId);
 
             if (task == null)
                 return null;
+
+            var teamProgress = await _context.Teams
+                .Where(team => team.SubjectId == task.Project.SubjectId)
+                .Select(team => new TeamProgressDto
+                {
+                    TeamId = team.Id,
+                    TeamName = team.Name,
+                    Status = _context.TeamTaskProgress
+                        .Where(ttp => ttp.TaskId == taskId && ttp.TeamId == team.Id)
+                        .Select(ttp => ttp.Status)
+                        .FirstOrDefault(),
+                    CompletedDate = _context.TeamTaskProgress
+                        .Where(ttp => ttp.TaskId == taskId && ttp.TeamId == team.Id)
+                        .Select(ttp => ttp.CompletedDate)
+                        .FirstOrDefault(),
+                    CompletedByName = _context.TeamTaskProgress
+                        .Where(ttp => ttp.TaskId == taskId && ttp.TeamId == team.Id)
+                        .Select(ttp => ttp.CompletedBy.FullName)
+                        .FirstOrDefault(),
+                    CompletedStageCount = _context.TeamStageProgress
+                        .Count(tsp => tsp.Stage.TaskId == taskId && tsp.TeamId == team.Id && tsp.IsCompleted),
+                    TotalStageCount = _context.TaskStages.Count(s => s.TaskId == taskId)
+                }).ToListAsync();
+
+            var teamProgressWithProgress = teamProgress.Select(tp => new
+            {
+                tp.TeamId,
+                tp.TeamName,
+                tp.Status,
+                tp.CompletedDate,
+                tp.CompletedByName,
+                tp.CompletedStageCount,
+                tp.TotalStageCount,
+                Progress = tp.TotalStageCount > 0 ? (double)tp.CompletedStageCount / tp.TotalStageCount * 100 : 0
+            }).ToList();
 
             return new ProjectTaskDto
             {
@@ -391,13 +858,17 @@ namespace ReverseGanttChart.Services.Project
                 Name = task.Name,
                 Description = task.Description,
                 DueDate = task.DueDate,
-                CompletedDate = task.CompletedDate,
-                Status = task.Status,
                 Priority = task.Priority,
-                ParentTaskId = task.ParentTaskId,
-                ParentTaskName = task.ParentTask?.Name,
-                StageCount = await _context.TaskStages.CountAsync(s => s.TaskId == taskId),
-                CompletedStageCount = await _context.TaskStages.CountAsync(s => s.TaskId == taskId && s.IsCompleted),
+                TeamProgress = teamProgress.Select(tp => new TeamProgressDto
+                {
+                    TeamId = tp.TeamId,
+                    TeamName = tp.TeamName,
+                    Status = tp.Status,
+                    CompletedDate = tp.CompletedDate,
+                    CompletedByName = tp.CompletedByName,
+                    CompletedStageCount = tp.CompletedStageCount,
+                    TotalStageCount = tp.TotalStageCount
+                }).ToList(),
                 CreatedAt = task.CreatedAt
             };
         }
@@ -405,11 +876,30 @@ namespace ReverseGanttChart.Services.Project
         private async Task<StageDto> GetStageDtoAsync(Guid stageId)
         {
             var stage = await _context.TaskStages
-                .Include(s => s.CompletedBy)
+                .Include(s => s.Task)
+                    .ThenInclude(t => t.Project)
                 .FirstOrDefaultAsync(s => s.Id == stageId);
 
             if (stage == null)
                 return null;
+
+            var teamProgress = await _context.Teams
+                .Where(team => team.SubjectId == stage.Task.Project.SubjectId)
+                .Select(team => new TeamStageProgressDto
+                {
+                    TeamId = team.Id,
+                    TeamName = team.Name,
+                    IsCompleted = _context.TeamStageProgress
+                        .Any(tsp => tsp.StageId == stageId && tsp.TeamId == team.Id && tsp.IsCompleted),
+                    CompletedAt = _context.TeamStageProgress
+                        .Where(tsp => tsp.StageId == stageId && tsp.TeamId == team.Id)
+                        .Select(tsp => tsp.CompletedAt)
+                        .FirstOrDefault(),
+                    CompletedByName = _context.TeamStageProgress
+                        .Where(tsp => tsp.StageId == stageId && tsp.TeamId == team.Id)
+                        .Select(tsp => tsp.CompletedBy.FullName)
+                        .FirstOrDefault()
+                }).ToListAsync();
 
             return new StageDto
             {
@@ -417,9 +907,7 @@ namespace ReverseGanttChart.Services.Project
                 Name = stage.Name,
                 Description = stage.Description,
                 EstimatedEffort = stage.EstimatedEffort,
-                IsCompleted = stage.IsCompleted,
-                CompletedAt = stage.CompletedAt,
-                CompletedByName = stage.CompletedBy?.FullName,
+                TeamProgress = teamProgress,
                 CreatedAt = stage.CreatedAt
             };
         }
