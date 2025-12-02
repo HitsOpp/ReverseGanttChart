@@ -26,5 +26,8 @@ namespace ReverseGanttChart.Services.Project
         
         Task<IActionResult> GetTeamProjectProgressAsync(Guid projectId, Guid teamId);
         Task<IActionResult> GetTeamTaskProgressAsync(Guid taskId, Guid teamId);
+        Task<IActionResult> EditProjectAsync(Guid projectId, EditProjectDto request, Guid userId);
+        Task<IActionResult> EditTaskAsync(Guid taskId, EditTaskDto request, Guid userId);
+        Task<IActionResult> EditStageAsync(Guid stageId, EditStageDto request, Guid userId);
     }
 }

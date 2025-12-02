@@ -911,5 +911,80 @@ namespace ReverseGanttChart.Services.Project
                 CreatedAt = stage.CreatedAt
             };
         }
+
+        public async Task<IActionResult> EditProjectAsync(Guid projectId, EditProjectDto request, Guid userId)
+        {
+            var project = await _context.Projects.FindAsync(projectId);
+            if (project == null)
+                return new NotFoundObjectResult("Project not found");
+
+            if (!await CanUserManageProjectsAsync(userId, project.SubjectId))
+                return new UnauthorizedObjectResult("Only teachers and assists can edit projects");
+
+            if (request.EndDate < request.StartDate)
+                return new BadRequestObjectResult("End date cannot be earlier than start date");
+
+            project.Name = request.Name;
+            project.Description = request.Description;
+            project.StartDate = request.StartDate;
+            project.EndDate = request.EndDate;
+
+            _context.Projects.Update(project);
+            await _context.SaveChangesAsync();
+
+            var projectDto = await GetProjectDtoAsync(project.Id);
+            return new OkObjectResult(projectDto);
+        }
+
+        public async Task<IActionResult> EditTaskAsync(Guid taskId, EditTaskDto request, Guid userId)
+        {
+            var task = await _context.ProjectTasks
+                .Include(t => t.Project)
+                .FirstOrDefaultAsync(t => t.Id == taskId);
+            
+            if (task == null)
+                return new NotFoundObjectResult("Task not found");
+
+            if (!await CanUserManageProjectsAsync(userId, task.Project.SubjectId))
+                return new UnauthorizedObjectResult("Only teachers and assists can edit tasks");
+
+            task.Name = request.Name;
+            task.Description = request.Description;
+            task.DueDate = request.DueDate;
+            task.Priority = request.Priority;
+
+            _context.ProjectTasks.Update(task);
+            await _context.SaveChangesAsync();
+
+            var taskDto = await GetTaskDtoAsync(task.Id);
+            return new OkObjectResult(taskDto);
+        }
+
+        public async Task<IActionResult> EditStageAsync(Guid stageId, EditStageDto request, Guid userId)
+        {
+            var stage = await _context.TaskStages
+                .Include(s => s.Task)
+                    .ThenInclude(t => t.Project)
+                .FirstOrDefaultAsync(s => s.Id == stageId);
+            
+            if (stage == null)
+                return new NotFoundObjectResult("Stage not found");
+
+            if (!await CanUserManageProjectsAsync(userId, stage.Task.Project.SubjectId))
+                return new UnauthorizedObjectResult("Only teachers and assists can edit stages");
+
+            if (request.EstimatedEffort < 0)
+                return new BadRequestObjectResult("Estimated effort cannot be negative");
+
+            stage.Name = request.Name;
+            stage.Description = request.Description;
+            stage.EstimatedEffort = request.EstimatedEffort;
+
+            _context.TaskStages.Update(stage);
+            await _context.SaveChangesAsync();
+
+            var stageDto = await GetStageDtoAsync(stage.Id);
+            return new OkObjectResult(stageDto);
+        }
     }
 }

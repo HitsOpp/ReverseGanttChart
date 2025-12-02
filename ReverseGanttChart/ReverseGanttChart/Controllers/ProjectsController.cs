@@ -29,95 +29,115 @@ public class ProjectsController : ControllerBase
         return await _projectService.GetSubjectProjectsAsync(subjectId);
     }
 
-    [HttpGet("{projectId}")]
+    [HttpGet]
     public async Task<IActionResult> GetProject(Guid projectId)
     {
         return await _projectService.GetProjectAsync(projectId);
     }
 
-    [HttpDelete("{projectId}/delete")]
+    [HttpDelete("delete")]
     public async Task<IActionResult> DeleteProject(Guid projectId)
     {
         var userId = Guid.Parse(User.FindFirst("Id")?.Value);
         return await _projectService.DeleteProjectAsync(projectId, userId);
     }
     
-    [HttpPost("{projectId}/tasks/create")]
+    [HttpPost("/tasks/create")]
     public async Task<IActionResult> CreateTask(Guid projectId, [FromBody] CreateTaskDto request)
     {
         var userId = Guid.Parse(User.FindFirst("Id")?.Value);
         return await _projectService.CreateTaskAsync(projectId, request, userId);
     }
 
-    [HttpGet("{projectId}/tasks")]
+    [HttpGet("/tasks")]
     public async Task<IActionResult> GetProjectTasks(Guid projectId)
     {
         return await _projectService.GetProjectTasksAsync(projectId);
     }
 
-    [HttpGet("tasks/{taskId}")]
+    [HttpGet("/tasks/info")]
     public async Task<IActionResult> GetTask(Guid taskId)
     {
         return await _projectService.GetTaskAsync(taskId);
     }
 
-    [HttpDelete("tasks/{taskId}/delete")]
+    [HttpDelete("tasks/delete")]
     public async Task<IActionResult> DeleteTask(Guid taskId)
     {
         var userId = Guid.Parse(User.FindFirst("Id")?.Value);
         return await _projectService.DeleteTaskAsync(taskId, userId);
     }
 
-    [HttpPost("tasks/{taskId}/stages/create")]
+    [HttpPost("tasks/stages/create")]
     public async Task<IActionResult> CreateStage(Guid taskId, [FromBody] CreateStageDto request)
     {
         var userId = Guid.Parse(User.FindFirst("Id")?.Value);
         return await _projectService.CreateStageAsync(taskId, request, userId);
     }
 
-    [HttpGet("tasks/{taskId}/stages")]
+    [HttpGet("tasks/stages")]
     public async Task<IActionResult> GetTaskStages(Guid taskId)
     {
         return await _projectService.GetTaskStagesAsync(taskId);
     }
 
-    [HttpDelete("stages/{stageId}/delete")]
+    [HttpDelete("stages/delete")]
     public async Task<IActionResult> DeleteStage(Guid stageId)
     {
         var userId = Guid.Parse(User.FindFirst("Id")?.Value);
         return await _projectService.DeleteStageAsync(stageId, userId);
     }
 
-    [HttpPost("stages/{stageId}/complete-for-team")]
+    [HttpPost("stages/complete-for-team")]
     public async Task<IActionResult> CompleteStageForTeam(Guid stageId, Guid teamId)
     {
         var userId = Guid.Parse(User.FindFirst("Id")?.Value);
         return await _projectService.CompleteStageForTeamAsync(stageId, teamId, userId);
     }
 
-    [HttpPost("stages/{stageId}/uncomplete-for-team")]
+    [HttpPost("stages/uncomplete-for-team")]
     public async Task<IActionResult> UncompleteStageForTeam(Guid stageId, Guid teamId)
     {
         var userId = Guid.Parse(User.FindFirst("Id")?.Value);
         return await _projectService.UncompleteStageForTeamAsync(stageId, teamId, userId);
     }
 
-    [HttpPost("tasks/{taskId}/complete-for-team")]
+    [HttpPost("tasks/complete-for-team")]
     public async Task<IActionResult> CompleteTaskForTeam(Guid taskId, Guid teamId)
     {
         var userId = Guid.Parse(User.FindFirst("Id")?.Value);
         return await _projectService.CompleteTaskForTeamAsync(taskId, teamId, userId);
     }
 
-    [HttpGet("{projectId}/team-progress/{teamId}")]
+    [HttpGet("Projects/team-progress")]
     public async Task<IActionResult> GetTeamProjectProgress(Guid projectId, Guid teamId)
     {
         return await _projectService.GetTeamProjectProgressAsync(projectId, teamId);
     }
 
-    [HttpGet("tasks/{taskId}/team-progress/{teamId}")]
+    [HttpGet("tasks/team-progress")]
     public async Task<IActionResult> GetTeamTaskProgress(Guid taskId, Guid teamId)
     {
         return await _projectService.GetTeamTaskProgressAsync(taskId, teamId);
+    }
+    
+    [HttpPut("edit")]
+    public async Task<IActionResult> EditProject(Guid projectId, [FromBody] EditProjectDto request)
+    {
+        var userId = Guid.Parse(User.FindFirst("Id")?.Value);
+        return await _projectService.EditProjectAsync(projectId, request, userId);
+    }
+    [HttpPut("tasks/edit")]
+    public async Task<IActionResult> EditTask(Guid taskId, [FromBody] EditTaskDto request)
+    {
+        var userId = Guid.Parse(User.FindFirst("Id")?.Value);
+        return await _projectService.EditTaskAsync(taskId, request, userId);
+    }
+    
+    [HttpPut("stages/edit")]
+    public async Task<IActionResult> EditStage(Guid stageId, [FromBody] EditStageDto request)
+    {
+        var userId = Guid.Parse(User.FindFirst("Id")?.Value);
+        return await _projectService.EditStageAsync(stageId, request, userId);
     }
 }
