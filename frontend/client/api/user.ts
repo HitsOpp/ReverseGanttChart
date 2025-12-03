@@ -9,6 +9,6 @@ const profileKeyFactory = {
 export const loadProfileData = () => {
   return queryOptions({
     queryKey: profileKeyFactory.loadPofileData(),
-    queryFn: () => apiCall.get<loadProfileDataResponse>("/Auth/profile"),
+    queryFn: () => apiCall.get<loadProfileDataResponse>("/User/profile"),
   });
 };
