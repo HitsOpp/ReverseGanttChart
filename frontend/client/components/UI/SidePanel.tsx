@@ -1,6 +1,6 @@
 import { useState, type FC, useEffect } from "react";
 import { FiBook, FiHelpCircle, FiUser, FiLogOut } from "react-icons/fi";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface SidePanelProps {
   userName: string;
@@ -9,7 +9,7 @@ interface SidePanelProps {
   setIsOpen: (v: boolean) => void;
 }
 
-type MenuItem = "subjects" | "support";
+type MenuItem = "subjects" | "support" | "profile";
 
 export const SidePanel: FC<SidePanelProps> = ({
   isOpen,
@@ -18,21 +18,38 @@ export const SidePanel: FC<SidePanelProps> = ({
   userHref = "#",
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const getActiveItemFromPath = (): MenuItem => {
+    const path = location.pathname;
+    if (path.startsWith("/subjects")) return "subjects";
+    if (path.startsWith("/support")) return "support";
+    if (path.startsWith("/profile")) return "profile";
+    return "subjects";
+  };
 
   const [activeItem, setActiveItem] = useState<MenuItem>(() => {
     const saved = localStorage.getItem("sidePanelActive");
-    return saved === "support" ? "support" : "subjects";
+    return (saved === "support" ? "support" :
+      saved === "profile" ? "profile" :
+        getActiveItemFromPath());
   });
 
   useEffect(() => {
-    localStorage.setItem("sidePanelActive", activeItem);
-  }, [activeItem]);
+    const currentActive = getActiveItemFromPath();
+    setActiveItem(currentActive);
+    localStorage.setItem("sidePanelActive", currentActive);
+  }, [location.pathname]);
 
   const togglePanel = () => setIsOpen(!isOpen);
 
   const handleItemClick = (item: MenuItem) => {
     navigate(`/${item}`);
     setActiveItem(item);
+  };
+
+  const handleProfileClick = () => {
+    navigate("/profile");
+    setActiveItem("profile");
   };
 
   const handleLogout = () => {
@@ -109,8 +126,8 @@ export const SidePanel: FC<SidePanelProps> = ({
                 flex items-center gap-3
                 ${
                   activeItem === "subjects"
-                    ? "bg-blue-50 text-blue-700 border border-blue-200"
-                    : "hover:bg-gray-50 border border-transparent"
+                  ? "bg-blue-50 text-blue-700 border border-blue-200"
+                  : "hover:bg-gray-50 border border-transparent"
                 }
               `}
             >
@@ -125,8 +142,8 @@ export const SidePanel: FC<SidePanelProps> = ({
                 flex items-center gap-3
                 ${
                   activeItem === "support"
-                    ? "bg-blue-50 text-blue-700 border border-blue-200"
-                    : "hover:bg-gray-50 border border-transparent"
+                  ? "bg-blue-50 text-blue-700 border border-blue-200"
+                  : "hover:bg-gray-50 border border-transparent"
                 }
               `}
             >
@@ -139,15 +156,24 @@ export const SidePanel: FC<SidePanelProps> = ({
         <div className="flex-1"></div>
 
         <div className="p-6 border-t border-gray-200 bg-gray-50">
-          <a
-            href={userHref}
-            className="flex items-center gap-3 py-3 px-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors mb-3"
+          {}
+          <button
+            onClick={handleProfileClick}
+            className={`
+              w-full flex items-center gap-3 py-3 px-4 rounded-lg border transition-colors mb-3 text-left
+              ${activeItem === "profile"
+                ? "bg-blue-50 text-blue-700 border-blue-200"
+                : "bg-white border-gray-200 hover:border-gray-300"
+              }
+            `}
           >
-            <FiUser className="w-5 h-5 text-gray-600" />
-            <div className="font-medium text-gray-900 flex-1 text-center">
+            <FiUser className={`w-5 h-5 ${activeItem === "profile" ? "text-blue-600" : "text-gray-600"
+              }`} />
+            <div className={`font-medium flex-1 text-center ${activeItem === "profile" ? "text-blue-700" : "text-gray-900"
+              }`}>
               {userName}
             </div>
-          </a>
+          </button>
 
           <button
             onClick={handleLogout}

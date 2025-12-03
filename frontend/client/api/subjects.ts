@@ -36,14 +36,8 @@ export const loadPersonsInSubject = (
   return queryOptions({
     queryKey: subjectKeyFactory.loadPersonsInSubject(subjectId, role),
     queryFn: () =>
-      apiCall.get<loadProfileDataResponse[]>(`/User/subject/${role}`, {
+      apiCall.get<loadProfileDataResponse[]>(`/Subjects/${role}`, {
         params: { subjectId },
       }),
-  });
-};
-export const CreateSubject = (name:string, description:string, color:string) => {
-  return queryOptions({
-    queryKey: subjectKeyFactory.loadSubject(),
-    queryFn: () => apiCall.get<loadSubjectType[]>(`/subjects/create/`),
   });
 };

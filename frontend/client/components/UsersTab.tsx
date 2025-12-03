@@ -72,7 +72,7 @@ export const UsersTab = ({ subjectId }: UsersTabProps) => {
             <div>
               <div className="font-medium text-lg">{user.fullName}</div>
               <div className="text-gray-500 text-sm">
-                {user.isTeacher ? "Препод" : "Студент"}
+                {!user.isTeacher ? "Преподаватель" : "Студент"}
               </div>
             </div>
           </div>
