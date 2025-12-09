@@ -129,10 +129,10 @@ export const SubjectDetailPage = () => {
         </div>
 
         {isTeacher && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <button
               onClick={openEdit}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md border border-gray-300 bg-white text-gray-700 hover:border-blue-300 hover:text-blue-700 hover:bg-gray-50 text-xs transition"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-800 hover:border-blue-300 hover:text-blue-700 hover:bg-gray-50 text-sm transition"
               aria-label="Редактировать предмет"
             >
               <FiEdit2 className="w-4 h-4" />
@@ -143,7 +143,7 @@ export const SubjectDetailPage = () => {
                 deleteMutation.mutate();
               }}
               disabled={deleteMutation.isPending}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md border border-gray-300 bg-white text-gray-700 hover:border-red-300 hover:text-red-600 hover:bg-gray-50 text-xs transition disabled:opacity-60"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-800 hover:border-red-300 hover:text-red-600 hover:bg-gray-50 text-sm transition disabled:opacity-60"
               aria-label="Удалить предмет"
             >
               <FiTrash2 className="w-4 h-4" />
