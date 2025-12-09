@@ -102,6 +102,25 @@ export const createSubject = (data: {
   return apiCall.post("/Subjects/create", data);
 };
 
+export const editSubject = (
+  subjectId: string,
+  data: {
+    name: string;
+    description: string;
+    color: string;
+  }
+) => {
+  return apiCall.put("/SubjectManagement/edit", data, {
+    params: { subjectId },
+  });
+};
+
+export const deleteSubject = (subjectId: string) => {
+  return apiCall.delete("/SubjectManagement/delete", {
+    params: { subjectId },
+  });
+};
+
 export const joinSubject = (subjectId: string) => {
   return apiCall.post("/Subjects/join", { subjectId });
 };
