@@ -1,4 +1,5 @@
 import { useProfile } from "@/hooks";
+import { QueryClient } from "@tanstack/react-query";
 import { useState, type FC, useEffect } from "react";
 import { FiBook, FiHelpCircle, FiUser, FiLogOut } from "react-icons/fi";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -11,6 +12,7 @@ interface SidePanelProps {
 type MenuItem = "subjects" | "support" | "profile";
 
 export const SidePanel: FC<SidePanelProps> = ({ isOpen, setIsOpen }) => {
+  const queryClient = new QueryClient();
   const { data } = useProfile();
   const navigate = useNavigate();
   const location = useLocation();
@@ -52,6 +54,7 @@ export const SidePanel: FC<SidePanelProps> = ({ isOpen, setIsOpen }) => {
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
+    queryClient.clear();
     navigate("/login", { replace: true });
   };
 
