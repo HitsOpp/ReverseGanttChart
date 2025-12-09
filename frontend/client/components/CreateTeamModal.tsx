@@ -13,6 +13,16 @@ export const CreateTeamModal = ({
 }: CreateTeamModalProps) => {
   const [teamName, setTeamName] = useState("");
   const [teamDescription, setTeamDescription] = useState("");
+   const [techStack, setTechStack] = useState("");
+
+   const ROLE_OPTIONS = [
+     { value: "frontend", label: "Фронтенд" },
+     { value: "backend", label: "Бэкенд" },
+     { value: "fullstack", label: "Фуллстек" },
+     { value: "analytics", label: "Аналитика" },
+     { value: "design", label: "Дизайн" },
+     { value: "qa", label: "Тестирование" },
+   ];
 
   const queryClient = useQueryClient();
 
@@ -21,7 +31,7 @@ export const CreateTeamModal = ({
       createTeam(subjectId, {
         name: teamName,
         description: teamDescription,
-        techStack: "",
+        techStack,
       }),
     onSuccess: (createdTeam) => {
       queryClient.setQueryData(
@@ -34,6 +44,7 @@ export const CreateTeamModal = ({
       setIsModalOpen(false);
       setTeamName("");
       setTeamDescription("");
+      setTechStack("");
     },
     onError: (err) => {
       console.error("Ошибка при создании команды:", err);
@@ -41,7 +52,7 @@ export const CreateTeamModal = ({
   });
 
   const handleCreateTeam = () => {
-    if (!teamName.trim()) return;
+    if (!teamName.trim() || !techStack) return;
     mutation.mutate();
   };
 
@@ -74,6 +85,21 @@ export const CreateTeamModal = ({
           className="w-full border border-gray-300 rounded-lg p-4 mb-4"
         />
 
+        <select
+          value={techStack}
+          onChange={(e) => setTechStack(e.target.value)}
+          className="w-full border border-gray-300 rounded-lg p-3 mb-4 bg-white"
+        >
+          <option value="" disabled>
+            Выберите основную роль / стек
+          </option>
+          {ROLE_OPTIONS.map((role) => (
+            <option key={role.value} value={role.value}>
+              {role.label}
+            </option>
+          ))}
+        </select>
+
         <div className="flex justify-end gap-2">
           <button
             onClick={() => setIsModalOpen(false)}
@@ -84,9 +110,9 @@ export const CreateTeamModal = ({
 
           <button
             onClick={handleCreateTeam}
-            disabled={mutation.isPending || !teamName.trim()}
+            disabled={mutation.isPending || !teamName.trim() || !techStack}
             className={`px-4 py-2 rounded-lg text-white transition ${
-              mutation.isPending || !teamName.trim()
+              mutation.isPending || !teamName.trim() || !techStack
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-green-500 hover:bg-green-600"
             }`}
