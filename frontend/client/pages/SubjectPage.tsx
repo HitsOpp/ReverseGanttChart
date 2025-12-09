@@ -273,7 +273,7 @@ export const SubjectPage = () => {
                   key={subject.id}
                   customHeaderColor={cardColor}
                   title={subject.name}
-                  institution={subject.description}
+                  institution="Высшая IT школа"
                   onNavigate={(tab) =>
                     navigate(`/subjects/${subject.id}/${tab}`)
                   }
