@@ -36,7 +36,8 @@ export const TaskStages = ({
   const queryClient = useQueryClient();
   const { data: profile } = useProfile();
   const { data: myTeam } = useQuery(loadMyTeam(subjectId));
-  const isUserTeacher = profile?.isTeacher || isTeacher;
+  const canCheckStages = profile?.isTeacher || isTeacher;
+  const canManageStages = profile?.isTeacher;
 
   const {
     data: stages,
@@ -79,7 +80,7 @@ export const TaskStages = ({
       <div className="ml-13 bg-white border border-gray-100 rounded-xl">
         <p className="p-4 text-gray-400">В этой задаче пока нет этапов</p>
 
-        {isUserTeacher && (
+        {canManageStages && (
           <div className="px-4 pb-4">
             <button
               onClick={() =>
@@ -144,52 +145,60 @@ export const TaskStages = ({
               )}
             </div>
 
-            {isUserTeacher && (
+            {(canCheckStages || canManageStages) && (
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() =>
-                    setCompleteStageData({
-                      stageId: stage.id,
-                      taskTeams: stage.teamProgress,
-                    })
-                  }
-                  className="px-3 py-1.5 text-xs bg-green-50 text-green-700 border border-green-200 rounded-md hover:bg-green-100"
-                >
-                  <FiCheck />
-                </button>
+                {canCheckStages && (
+                  <>
+                    <button
+                      onClick={() =>
+                        setCompleteStageData({
+                          stageId: stage.id,
+                          taskTeams: stage.teamProgress,
+                        })
+                      }
+                      className="px-3 py-1.5 text-xs bg-green-50 text-green-700 border border-green-200 rounded-md hover:bg-green-100"
+                    >
+                      <FiCheck />
+                    </button>
 
-                <button
-                  onClick={() =>
-                    setUncompleteStageData({
-                      stageId: stage.id,
-                      taskTeams: stage.teamProgress,
-                    })
-                  }
-                  className="px-3 py-1.5 text-xs bg-red-50 text-red-700 border border-red-200 rounded-md hover:bg-red-100"
-                >
-                  <FiX />
-                </button>
+                    <button
+                      onClick={() =>
+                        setUncompleteStageData({
+                          stageId: stage.id,
+                          taskTeams: stage.teamProgress,
+                        })
+                      }
+                      className="px-3 py-1.5 text-xs bg-red-50 text-red-700 border border-red-200 rounded-md hover:bg-red-100"
+                    >
+                      <FiX />
+                    </button>
+                  </>
+                )}
 
-                <button
-                  onClick={() => setEditingStage(stage)}
-                  className="p-2 rounded-md border border-gray-200 text-gray-400 hover:text-blue-600 hover:bg-blue-50"
-                >
-                  <FiEdit2 className="w-4 h-4" />
-                </button>
+                {canManageStages && (
+                  <>
+                    <button
+                      onClick={() => setEditingStage(stage)}
+                      className="p-2 rounded-md border border-gray-200 text-gray-400 hover:text-blue-600 hover:bg-blue-50"
+                    >
+                      <FiEdit2 className="w-4 h-4" />
+                    </button>
 
-                <button
-                  onClick={() => deleteStageMutation.mutate(stage.id)}
-                  className="p-2 rounded-md border border-gray-200 text-gray-400 hover:text-red-600 hover:bg-red-50"
-                >
-                  <FiTrash2 className="w-4 h-4" />
-                </button>
+                      <button
+                        onClick={() => deleteStageMutation.mutate(stage.id)}
+                        className="p-2 rounded-md border border-gray-200 text-gray-400 hover:text-red-600 hover:bg-red-50"
+                      >
+                        <FiTrash2 className="w-4 h-4" />
+                      </button>
+                  </>
+                )}
               </div>
             )}
           </div>
         );
       })}
 
-      {isUserTeacher && (
+      {canManageStages && (
         <div className="px-6 py-3 bg-gray-50 border-t border-gray-100">
           <button
             onClick={() =>
