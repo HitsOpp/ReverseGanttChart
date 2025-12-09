@@ -89,7 +89,7 @@ export const editProject = (
     endDate: string;
   }
 ) => {
-  return apiCall.put("/Projects/edit", data, {
+  return apiCall.put("/project/edit", data, {
     params: { projectId },
   });
 };
@@ -121,13 +121,13 @@ export const createTask = (
 };
 
 export const deleteProject = (projectId: string) => {
-  return apiCall.delete("/Projects/delete", {
+  return apiCall.delete("/project/delete", {
     params: { projectId },
   });
 };
 
 export const deleteTask = (taskId: string) => {
-  return apiCall.delete("/Projects/tasks/delete", {
+  return apiCall.delete("/tasks/delete", {
     params: { taskId },
   });
 };
@@ -141,7 +141,7 @@ export const editTask = (
     priority?: number;
   }
 ) => {
-  return apiCall.put("/Projects/tasks/edit", data, {
+  return apiCall.put("/tasks/edit", data, {
     params: { taskId },
   });
 };

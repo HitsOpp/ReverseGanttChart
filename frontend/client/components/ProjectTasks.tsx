@@ -77,7 +77,7 @@ export const ProjectTasks = ({
           <div
             key={task.id ?? index}
             className={`
-              flex justify-between items-center px-12 py-3 text-sm
+              bg-white flex justify-between items-center px-12 py-3 text-sm
               ${taskBgClass} ${index !== tasks.length - 1 ? "mb-2" : ""}
               hover:bg-gray-50
             `}
