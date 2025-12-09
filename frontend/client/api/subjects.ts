@@ -15,6 +15,7 @@ export const subjectKeyFactory = {
     role,
     "loadPersonsInSubject",
   ],
+  loadAssistsInSubject: (subjectId: string) => [subjectId, "assists"],
 };
 
 export const loadSubjects = () => {
@@ -42,6 +43,16 @@ export const loadPersonsInSubject = (
     queryKey: subjectKeyFactory.loadPersonsInSubject(subjectId, role),
     queryFn: () =>
       apiCall.get<loadProfileDataResponse[]>(`/Subjects/${role}`, {
+        params: { subjectId },
+      }),
+  });
+};
+
+export const loadAssistsInSubject = (subjectId: string) => {
+  return queryOptions({
+    queryKey: subjectKeyFactory.loadAssistsInSubject(subjectId),
+    queryFn: () =>
+      apiCall.get<loadProfileDataResponse[]>(`/Subjects/assists`, {
         params: { subjectId },
       }),
   });
@@ -149,6 +160,26 @@ export const deleteTask = (taskId: string) => {
   return apiCall.delete("/tasks/delete", {
     params: { taskId },
   });
+};
+
+export const grantAssist = (subjectId: string, userId: string) => {
+  return apiCall.put(
+    "/SubjectRoles/grant-assist",
+    {},
+    {
+      params: { subjectId, userId },
+    }
+  );
+};
+
+export const revokeAssist = (subjectId: string, userId: string) => {
+  return apiCall.put(
+    "/SubjectRoles/revoke-assist",
+    {},
+    {
+      params: { subjectId, userId },
+    }
+  );
 };
 
 export const editTask = (

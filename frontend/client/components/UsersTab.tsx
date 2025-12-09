@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { FiUser, FiUsers } from "react-icons/fi";
-import { useQuery } from "@tanstack/react-query";
-import { loadPersonsInSubject } from "client/api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  grantAssist,
+  loadAssistsInSubject,
+  loadPersonsInSubject,
+  revokeAssist,
+  subjectKeyFactory,
+} from "client/api";
+import { useProfile } from "@/hooks";
 
 interface UsersTabProps {
   subjectId: string;
@@ -12,9 +19,88 @@ export const UsersTab = ({ subjectId }: UsersTabProps) => {
     "teachers"
   );
 
-  const { data, isLoading, isError } = useQuery(
-    loadPersonsInSubject(subjectId, selectedGroup)
-  );
+  const {
+    data: students,
+    isLoading: isStudentsLoading,
+    isError: isStudentsError,
+  } = useQuery(loadPersonsInSubject(subjectId, "students"));
+
+  const {
+    data: teachers,
+    isLoading: isTeachersLoading,
+    isError: isTeachersError,
+  } = useQuery(loadPersonsInSubject(subjectId, "teachers"));
+
+  const {
+    data: assists,
+    isLoading: isAssistsLoading,
+    isError: isAssistsError,
+  } = useQuery(loadAssistsInSubject(subjectId));
+
+  const { data: profile } = useProfile();
+  const isTeacher = profile?.isTeacher;
+
+  const queryClient = useQueryClient();
+
+  const grantAssistMutation = useMutation({
+    mutationFn: (userId: string) => grantAssist(subjectId, userId),
+    onSuccess: async () => {
+      await queryClient.refetchQueries({
+        queryKey: subjectKeyFactory.loadPersonsInSubject(subjectId, "students"),
+      });
+      await queryClient.refetchQueries({
+        queryKey: subjectKeyFactory.loadAssistsInSubject(subjectId),
+      });
+      await queryClient.refetchQueries({
+        queryKey: subjectKeyFactory.loadPersonsInSubject(subjectId, "teachers"),
+      });
+    },
+  });
+
+  const revokeAssistMutation = useMutation({
+    mutationFn: (userId: string) => revokeAssist(subjectId, userId),
+    onSuccess: async () => {
+      await queryClient.refetchQueries({
+        queryKey: subjectKeyFactory.loadAssistsInSubject(subjectId),
+      });
+      await queryClient.refetchQueries({
+        queryKey: subjectKeyFactory.loadPersonsInSubject(subjectId, "students"),
+      });
+      await queryClient.refetchQueries({
+        queryKey: subjectKeyFactory.loadPersonsInSubject(subjectId, "teachers"),
+      });
+    },
+  });
+
+  const isLoading =
+    selectedGroup === "students"
+      ? isStudentsLoading
+      : isTeachersLoading || isAssistsLoading;
+
+  const isError =
+    selectedGroup === "students"
+      ? isStudentsError
+      : isTeachersError || isAssistsError;
+
+  const usersToDisplay =
+    selectedGroup === "students"
+      ? (students ?? []).map((user) => ({
+          ...user,
+          roleLabel: "Студент" as const,
+          isAssistant: false,
+        }))
+      : [
+          ...(teachers ?? []).map((user) => ({
+            ...user,
+            roleLabel: "Преподаватель" as const,
+            isAssistant: false,
+          })),
+          ...(assists ?? []).map((user) => ({
+            ...user,
+            roleLabel: "Ассистент" as const,
+            isAssistant: true,
+          })),
+        ];
 
   return (
     <>
@@ -61,20 +147,66 @@ export const UsersTab = ({ subjectId }: UsersTabProps) => {
           <p className="p-4 text-red-500">Ошибка при загрузке данных</p>
         )}
 
-        {data?.map((user, index) => (
+        {usersToDisplay.map((user, index) => (
           <div
-            key={user.id ?? index}
+            key={user.userId ?? user.id ?? index}
             className={`
               p-4 flex justify-between items-center
-              ${index !== data.length - 1 ? "border-b border-gray-200" : ""}
+              ${
+                index !== usersToDisplay.length - 1
+                  ? "border-b border-gray-200"
+                  : ""
+              }
             `}
           >
             <div>
               <div className="font-medium text-lg">{user.fullName}</div>
               <div className="text-gray-500 text-sm">
-                {selectedGroup === "teachers" ? "Преподаватель" : "Студент"}
+                {user.roleLabel}
               </div>
             </div>
+            {isTeacher && selectedGroup === "students" && (
+              <button
+                type="button"
+                onClick={() =>
+                  grantAssistMutation.mutate(user.userId ?? user.id)
+                }
+                disabled={grantAssistMutation.isPending}
+                className={`
+                  px-4 py-2 rounded-md text-sm font-medium transition
+                  ${
+                    grantAssistMutation.isPending
+                      ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                      : "bg-blue-600 text-white hover:bg-blue-700"
+                  }
+                `}
+              >
+                {grantAssistMutation.isPending
+                  ? "Назначение..."
+                  : "Назначить ассистентом"}
+              </button>
+            )}
+            {isTeacher && selectedGroup === "teachers" && user.isAssistant && (
+              <button
+                type="button"
+                onClick={() =>
+                  revokeAssistMutation.mutate(user.userId ?? user.id)
+                }
+                disabled={revokeAssistMutation.isPending}
+                className={`
+                  px-4 py-2 rounded-md text-sm font-medium transition
+                  ${
+                    revokeAssistMutation.isPending
+                      ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                      : "bg-red-600 text-white hover:bg-red-700"
+                  }
+                `}
+              >
+                {revokeAssistMutation.isPending
+                  ? "Удаление роли..."
+                  : "Убрать роль ассистента"}
+              </button>
+            )}
           </div>
         ))}
       </div>
