@@ -9,6 +9,7 @@ import {
 } from "client/api";
 import { useNavigate } from "react-router";
 import { useProfile } from "@/hooks/useProfile";
+import EgImage from "../icons/eg.png";
 
 export const SubjectPage = () => {
   const navigate = useNavigate();
@@ -263,24 +264,36 @@ export const SubjectPage = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
-            {data?.map((subject) => {
-              const cardColor =
-                subject.headerColor ?? subject.color ?? "#8B5CF6";
+          {!data?.length && (
+            <div className="flex justify-center">
+              <img
+                src={EgImage}
+                alt="Нет предметов"
+                className="max-w-xl w-full"
+              />
+            </div>
+          )}
 
-              return (
-                <SubjectCard
-                  key={subject.id}
-                  customHeaderColor={cardColor}
-                  title={subject.name}
-                  institution="Высшая IT школа"
-                  onNavigate={(tab) =>
-                    navigate(`/subjects/${subject.id}/${tab}`)
-                  }
-                />
-              );
-            })}
-          </div>
+          {data?.length ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
+              {data.map((subject) => {
+                const cardColor =
+                  subject.headerColor ?? subject.color ?? "#8B5CF6";
+
+                return (
+                  <SubjectCard
+                    key={subject.id}
+                    customHeaderColor={cardColor}
+                    title={subject.name}
+                    institution="Высшая IT школа"
+                    onNavigate={(tab) =>
+                      navigate(`/subjects/${subject.id}/${tab}`)
+                    }
+                  />
+                );
+              })}
+            </div>
+          ) : null}
         </div>
       </main>
     </div>
