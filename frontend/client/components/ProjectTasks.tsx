@@ -116,6 +116,18 @@ export const ProjectTasks = ({
                 </button>
               )}
             </div>
+    <div className="bg-white">
+      {data.map((task, index) => (
+        <div
+          key={task.id ?? index}
+          className={`
+            flex justify-between items-center px-12 py-3 text-sm hover:bg-gray-50
+            ${index !== data.length - 1 ? "border-b border-gray-200" : ""}
+          `}
+        >
+          <div>
+            <div className="font-medium">{task.name}</div>
+            <div className="text-gray-500 text-xs">{task.description}</div>
           </div>
         );
       })}
