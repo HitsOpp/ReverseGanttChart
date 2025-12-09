@@ -87,10 +87,12 @@ export const TasksTab = ({ subjectId }: TasksTabProps) => {
               {isOpen && (
                 <ProjectTasks projectId={project.id} subjectId={subjectId} />
               )}
+              {isOpen && <ProjectTasks projectId={project.id} />}
             </div>
           );
         })}
       </div>
+
       {isCreateOpen && (
         <CreateProjectModal
           subjectId={subjectId}

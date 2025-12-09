@@ -29,12 +29,14 @@ export const SubjectDetailPage = () => {
 
   if (!subject) return <p>Загрузка...</p>;
 
+  const headerColor = subject.headerColor ?? subject.color ?? "#3B82F6";
+
   return (
     <div className="min-h-screen bg-gray-100">
       <div
         className="w-full pt-10 pb-10 pl-5 flex flex-col justify-end items-start"
         style={{
-          backgroundColor: subject.headerColor ?? "#3B82F6",
+          backgroundColor: headerColor,
           minHeight: "220px",
         }}
       >
