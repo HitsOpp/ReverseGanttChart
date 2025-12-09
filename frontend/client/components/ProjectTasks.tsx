@@ -9,7 +9,12 @@ import {
   FiX,
 } from "react-icons/fi";
 import { useProfile } from "@/hooks/useProfile";
-import { deleteTask, loadProjectTasks, loadMyTeam } from "client/api";
+import {
+  deleteTask,
+  loadProjectTasks,
+  loadMyTeam,
+  loadSubjectRole,
+} from "client/api";
 import { CompleteTaskModal } from "./CompleteTaskModal";
 import { UncompleteTaskModal } from "./UncompleteTaskModal";
 import { TaskStages } from "./TaskStages";
@@ -29,8 +34,11 @@ export const ProjectTasks = ({
   onTaskEdit,
 }: ProjectTasksProps) => {
   const queryClient = useQueryClient();
+  const { data: role } = useQuery(loadSubjectRole(subjectId));
   const { data: profile } = useProfile();
   const isUserTeacher = profile?.isTeacher || isTeacher;
+  const isAssistant = role?.role === "Assist";
+  const canCheckTasks = isUserTeacher || isAssistant;
 
   const {
     data: tasks,
@@ -150,7 +158,7 @@ export const ProjectTasks = ({
                   </span>
                 )}
 
-                {isUserTeacher && (
+                {canCheckTasks && (
                   <>
                     <button
                       onClick={(e) => {
@@ -172,7 +180,11 @@ export const ProjectTasks = ({
                     >
                       <FiX />
                     </button>
+                  </>
+                )}
 
+                {isUserTeacher && (
+                  <>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -201,14 +213,14 @@ export const ProjectTasks = ({
               <TaskStages
                 taskId={task.id}
                 subjectId={subjectId}
-                isTeacher={isUserTeacher}
+                isTeacher={canCheckTasks}
               />
             )}
           </div>
         );
       })}
 
-      {selectedTaskId && isUserTeacher && (
+      {selectedTaskId && canCheckTasks && (
         <CompleteTaskModal
           taskId={selectedTaskId}
           subjectId={subjectId}
@@ -216,7 +228,7 @@ export const ProjectTasks = ({
         />
       )}
 
-      {uncompleteTaskId && isUserTeacher && (
+      {uncompleteTaskId && canCheckTasks && (
         <UncompleteTaskModal
           taskId={uncompleteTaskId}
           subjectId={subjectId}
