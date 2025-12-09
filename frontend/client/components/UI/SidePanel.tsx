@@ -4,7 +4,6 @@ import { FiBook, FiHelpCircle, FiUser, FiLogOut } from "react-icons/fi";
 import { useNavigate, useLocation } from "react-router-dom";
 
 interface SidePanelProps {
-  userHref?: string;
   isOpen: boolean;
   setIsOpen: (v: boolean) => void;
 }
@@ -15,6 +14,7 @@ export const SidePanel: FC<SidePanelProps> = ({ isOpen, setIsOpen }) => {
   const { data } = useProfile();
   const navigate = useNavigate();
   const location = useLocation();
+
   const getActiveItemFromPath = (): MenuItem => {
     const path = location.pathname;
     if (path.startsWith("/subjects")) return "subjects";
@@ -41,18 +41,18 @@ export const SidePanel: FC<SidePanelProps> = ({ isOpen, setIsOpen }) => {
   const togglePanel = () => setIsOpen(!isOpen);
 
   const handleItemClick = (item: MenuItem) => {
-    navigate(`/${item}`);
     setActiveItem(item);
+    navigate(`/${item}`, { replace: true });
   };
 
   const handleProfileClick = () => {
-    navigate("/profile");
     setActiveItem("profile");
+    navigate("/profile", { replace: true });
   };
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
-    navigate("/login");
+    navigate("/login", { replace: true });
   };
 
   return (
@@ -151,7 +151,7 @@ export const SidePanel: FC<SidePanelProps> = ({ isOpen, setIsOpen }) => {
           </div>
         </div>
 
-        <div className="flex-1"></div>
+        <div className="flex-1" />
 
         <div className="p-6 border-t border-gray-200 bg-gray-50">
           <button
@@ -171,9 +171,10 @@ export const SidePanel: FC<SidePanelProps> = ({ isOpen, setIsOpen }) => {
               }`}
             />
             <div
-              className={`font-medium flex-1 text-center ${
-                activeItem === "profile" ? "text-blue-700" : "text-gray-900"
-              }`}
+              className={`
+                font-medium flex-1 text-center
+                ${activeItem === "profile" ? "text-blue-700" : "text-gray-900"}
+              `}
             >
               {data?.fullName}
             </div>

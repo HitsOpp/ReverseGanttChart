@@ -5,6 +5,7 @@ import { CreateTeamModal } from "./CreateTeamModal";
 import { MyTeamView } from "./MyTeamView";
 import { loadMyTeam, loadAllTeams, teamsKeyFactory } from "@/api/teams";
 import { apiCall } from "client/utils";
+import type { LoadAllTeams } from "@/shared";
 
 interface TeamTabProps {
   subjectId: string;
@@ -24,12 +25,38 @@ export const TeamTab = ({ subjectId }: TeamTabProps) => {
   const joinMutation = useMutation({
     mutationFn: (teamId: string) =>
       apiCall.post(`/Teams/${teamId}/join`, { techStack: "string" }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: teamsKeyFactory.loadMyTeam(subjectId),
+
+    onMutate: async (teamId) => {
+      await queryClient.cancelQueries({
+        queryKey: teamsKeyFactory.loadAllTeams(subjectId),
       });
+
+      const teams = queryClient.getQueryData<LoadAllTeams[]>(
+        teamsKeyFactory.loadAllTeams(subjectId)
+      );
+
+      const joinedTeam = teams?.find((t) => t.id === teamId);
+
+      if (joinedTeam) {
+        queryClient.setQueryData(
+          teamsKeyFactory.loadMyTeam(subjectId),
+          joinedTeam
+        );
+      }
+
+      return { teams };
+    },
+
+    onError: (_err, _id, context) => {
+      queryClient.setQueryData(
+        teamsKeyFactory.loadAllTeams(subjectId),
+        context?.teams
+      );
+    },
+
+    onSettled: () => {
       queryClient.invalidateQueries({
-        queryKey: [subjectId, "teams"],
+        queryKey: teamsKeyFactory.loadAllTeams(subjectId),
       });
     },
   });
