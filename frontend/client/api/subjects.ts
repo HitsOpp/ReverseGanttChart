@@ -89,7 +89,7 @@ export const editProject = (
     endDate: string;
   }
 ) => {
-  return apiCall.put("/Projects/edit", data, {
+  return apiCall.put("/project/edit", data, {
     params: { projectId },
   });
 };
@@ -100,6 +100,25 @@ export const createSubject = (data: {
   color: string;
 }) => {
   return apiCall.post("/Subjects/create", data);
+};
+
+export const editSubject = (
+  subjectId: string,
+  data: {
+    name: string;
+    description: string;
+    color: string;
+  }
+) => {
+  return apiCall.put("/SubjectManagement/edit", data, {
+    params: { subjectId },
+  });
+};
+
+export const deleteSubject = (subjectId: string) => {
+  return apiCall.delete("/SubjectManagement/delete", {
+    params: { subjectId },
+  });
 };
 
 export const joinSubject = (subjectId: string) => {
@@ -121,13 +140,13 @@ export const createTask = (
 };
 
 export const deleteProject = (projectId: string) => {
-  return apiCall.delete("/Projects/delete", {
+  return apiCall.delete("/project/delete", {
     params: { projectId },
   });
 };
 
 export const deleteTask = (taskId: string) => {
-  return apiCall.delete("/Projects/tasks/delete", {
+  return apiCall.delete("/tasks/delete", {
     params: { taskId },
   });
 };
@@ -141,7 +160,7 @@ export const editTask = (
     priority?: number;
   }
 ) => {
-  return apiCall.put("/Projects/tasks/edit", data, {
+  return apiCall.put("/tasks/edit", data, {
     params: { taskId },
   });
 };

@@ -70,7 +70,7 @@ export const SubjectCard: FC<SubjectCardProps> = ({
       <div className={headerClass} style={headerStyle}>
         <h3 className="font-bold text-lg leading-tight mb-1">{title}</h3>
         <p
-          className={`text-sm opacity-90 ${
+          className={`text-sm opacity-90 line-clamp-1 ${
             customHeaderColor ? "text-white opacity-80" : selectedScheme.text
           }`}
         >
