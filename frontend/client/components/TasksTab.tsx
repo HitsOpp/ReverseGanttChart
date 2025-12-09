@@ -1,0 +1,71 @@
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { FiPlusSquare, FiClipboard } from "react-icons/fi";
+import { useProfile } from "@/hooks/useProfile";
+import { loadSubjectProjects } from "client/api";
+
+interface TasksTabProps {
+  subjectId: string;
+}
+
+export const TasksTab = ({ subjectId }: TasksTabProps) => {
+  const navigate = useNavigate();
+  const { data: Profile } = useProfile();
+
+  const { data, isLoading, isError } = useQuery(loadSubjectProjects(subjectId));
+  const isTeacher = Profile?.isTeacher && Profile.isTeacher;
+  return (
+    <>
+      <div className="bg-white shadow-sm rounded-lg overflow-hidden p-6 flex justify-between items-center">
+        <h1 className="text-4xl font-normal">Итоговые проекты</h1>
+
+        {isTeacher && (
+          <button
+            onClick={() => navigate(`/Projects/create?subjectId=${subjectId}`)}
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          >
+            <FiPlusSquare className="w-5 h-5" />
+            Добавить проект
+          </button>
+        )}
+      </div>
+
+      <div className="mt-5 bg-white shadow-sm rounded-lg overflow-hidden">
+        {isLoading && <p className="p-4 text-gray-500">Загрузка...</p>}
+
+        {isError && (
+          <p className="p-4 text-red-500">Ошибка при загрузке проектов</p>
+        )}
+
+        {!isLoading && !data?.length && (
+          <p className="p-4 text-gray-500">Итоговых проектов пока нет</p>
+        )}
+
+        {data?.map((project, index) => (
+          <div
+            key={project.id ?? index}
+            className={`
+              p-4 flex justify-between items-center
+              ${index !== data.length - 1 ? "border-b border-gray-200" : ""}
+            `}
+          >
+            <div className="flex items-start gap-3">
+              <FiClipboard className="w-5 h-5 text-gray-500 mt-1" />
+
+              <div>
+                <div className="font-medium text-lg">{project.name}</div>
+                <div className="text-gray-500 text-sm">
+                  {project.description}
+                </div>
+                <div className="text-gray-400 text-xs mt-1">
+                  {new Date(project.startDate).toLocaleDateString()} —{" "}
+                  {new Date(project.endDate).toLocaleDateString()}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+};

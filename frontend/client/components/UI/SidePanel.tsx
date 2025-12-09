@@ -1,9 +1,9 @@
+import { useProfile } from "@/hooks";
 import { useState, type FC, useEffect } from "react";
 import { FiBook, FiHelpCircle, FiUser, FiLogOut } from "react-icons/fi";
 import { useNavigate, useLocation } from "react-router-dom";
 
 interface SidePanelProps {
-  userName: string;
   userHref?: string;
   isOpen: boolean;
   setIsOpen: (v: boolean) => void;
@@ -11,12 +11,8 @@ interface SidePanelProps {
 
 type MenuItem = "subjects" | "support" | "profile";
 
-export const SidePanel: FC<SidePanelProps> = ({
-  isOpen,
-  setIsOpen,
-  userName,
-  userHref = "#",
-}) => {
+export const SidePanel: FC<SidePanelProps> = ({ isOpen, setIsOpen }) => {
+  const { data } = useProfile();
   const navigate = useNavigate();
   const location = useLocation();
   const getActiveItemFromPath = (): MenuItem => {
@@ -29,9 +25,11 @@ export const SidePanel: FC<SidePanelProps> = ({
 
   const [activeItem, setActiveItem] = useState<MenuItem>(() => {
     const saved = localStorage.getItem("sidePanelActive");
-    return (saved === "support" ? "support" :
-      saved === "profile" ? "profile" :
-        getActiveItemFromPath());
+    return saved === "support"
+      ? "support"
+      : saved === "profile"
+      ? "profile"
+      : getActiveItemFromPath();
   });
 
   useEffect(() => {
@@ -126,8 +124,8 @@ export const SidePanel: FC<SidePanelProps> = ({
                 flex items-center gap-3
                 ${
                   activeItem === "subjects"
-                  ? "bg-blue-50 text-blue-700 border border-blue-200"
-                  : "hover:bg-gray-50 border border-transparent"
+                    ? "bg-blue-50 text-blue-700 border border-blue-200"
+                    : "hover:bg-gray-50 border border-transparent"
                 }
               `}
             >
@@ -142,8 +140,8 @@ export const SidePanel: FC<SidePanelProps> = ({
                 flex items-center gap-3
                 ${
                   activeItem === "support"
-                  ? "bg-blue-50 text-blue-700 border border-blue-200"
-                  : "hover:bg-gray-50 border border-transparent"
+                    ? "bg-blue-50 text-blue-700 border border-blue-200"
+                    : "hover:bg-gray-50 border border-transparent"
                 }
               `}
             >
@@ -156,22 +154,28 @@ export const SidePanel: FC<SidePanelProps> = ({
         <div className="flex-1"></div>
 
         <div className="p-6 border-t border-gray-200 bg-gray-50">
-          {}
           <button
             onClick={handleProfileClick}
             className={`
               w-full flex items-center gap-3 py-3 px-4 rounded-lg border transition-colors mb-3 text-left
-              ${activeItem === "profile"
-                ? "bg-blue-50 text-blue-700 border-blue-200"
-                : "bg-white border-gray-200 hover:border-gray-300"
+              ${
+                activeItem === "profile"
+                  ? "bg-blue-50 text-blue-700 border-blue-200"
+                  : "bg-white border-gray-200 hover:border-gray-300"
               }
             `}
           >
-            <FiUser className={`w-5 h-5 ${activeItem === "profile" ? "text-blue-600" : "text-gray-600"
-              }`} />
-            <div className={`font-medium flex-1 text-center ${activeItem === "profile" ? "text-blue-700" : "text-gray-900"
-              }`}>
-              {userName}
+            <FiUser
+              className={`w-5 h-5 ${
+                activeItem === "profile" ? "text-blue-600" : "text-gray-600"
+              }`}
+            />
+            <div
+              className={`font-medium flex-1 text-center ${
+                activeItem === "profile" ? "text-blue-700" : "text-gray-900"
+              }`}
+            >
+              {data?.fullName}
             </div>
           </button>
 

@@ -3,6 +3,7 @@ import { queryOptions } from "@tanstack/react-query";
 import {
   type loadProfileDataResponse,
   type loadSubjectType,
+  type loadProjectType,
 } from "client/shared";
 
 const subjectKeyFactory = {
@@ -37,6 +38,15 @@ export const loadPersonsInSubject = (
     queryKey: subjectKeyFactory.loadPersonsInSubject(subjectId, role),
     queryFn: () =>
       apiCall.get<loadProfileDataResponse[]>(`/Subjects/${role}`, {
+        params: { subjectId },
+      }),
+  });
+};
+export const loadSubjectProjects = (subjectId: string) => {
+  return queryOptions({
+    queryKey: ["subject-projects", subjectId],
+    queryFn: () =>
+      apiCall.get<loadProjectType[]>("/Projects/subject-projects", {
         params: { subjectId },
       }),
   });

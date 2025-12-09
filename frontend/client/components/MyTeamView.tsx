@@ -30,7 +30,6 @@ export const MyTeamView = ({ team, subjectId, onLeave }: MyTeamViewProps) => {
   const leaveMutation = useMutation({
     mutationFn: () => apiCall.post(`/Teams/${team.id}/leave`),
     onSuccess: () => {
-      // Мгновенно убираем myTeam из кэша
       queryClient.setQueryData(
         teamsKeyFactory.loadMyTeam(subjectId),
         undefined
@@ -44,11 +43,10 @@ export const MyTeamView = ({ team, subjectId, onLeave }: MyTeamViewProps) => {
     },
   });
 
-  // React Query v5: проверяем статус через leaveMutation.status
   const isLoading = leaveMutation.status === "pending";
 
   return (
-    <div className="bg-white shadow-lg rounded-xl p-6 max-w-2xl mx-auto">
+    <div className="bg-white shadow-lg rounded-xl p-6 max-w-2xl">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-3xl font-bold">{team.name}</h2>
         <button
