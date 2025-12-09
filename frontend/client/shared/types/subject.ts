@@ -4,13 +4,7 @@ export interface loadSubjectType {
   id: string;
   assistantId: number;
   creatorName: string;
-  headerColor:
-    | "blue"
-    | "green"
-    | "red"
-    | "purple"
-    | "orange"
-    | "indigo"
-    | "pink";
+  headerColor?: string;
+  color?: string;
   currentUserRole: "teacher" | "student" | "assistant";
 }

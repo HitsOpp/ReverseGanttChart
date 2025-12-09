@@ -8,3 +8,9 @@ export interface loadProjectType {
   taskCount: number;
   createdAt: string;
 }
+
+export interface ProjectTaskType {
+  id: string;
+  name: string;
+  description: string;
+}

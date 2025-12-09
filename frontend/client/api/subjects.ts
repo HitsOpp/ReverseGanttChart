@@ -4,9 +4,10 @@ import {
   type loadProfileDataResponse,
   type loadSubjectType,
   type loadProjectType,
+  type ProjectTaskType,
 } from "client/shared";
 
-const subjectKeyFactory = {
+export const subjectKeyFactory = {
   loadSubject: () => ["loadSubject"],
   loadSubjectById: (subjectId: string) => [subjectId, "loadSubject"],
   loadPersonsInSubject: (subjectId: string, role: string) => [
@@ -22,6 +23,7 @@ export const loadSubjects = () => {
     queryFn: () => apiCall.get<loadSubjectType[]>("/Subjects/my-subjects"),
   });
 };
+
 export const loadSubjectById = (subjectId: string) => {
   return queryOptions({
     queryKey: subjectKeyFactory.loadSubjectById(subjectId),
@@ -31,6 +33,7 @@ export const loadSubjectById = (subjectId: string) => {
       }),
   });
 };
+
 export const loadPersonsInSubject = (
   subjectId: string,
   role: "teachers" | "students"
@@ -43,6 +46,7 @@ export const loadPersonsInSubject = (
       }),
   });
 };
+
 export const loadSubjectProjects = (subjectId: string) => {
   return queryOptions({
     queryKey: ["subject-projects", subjectId],
@@ -56,7 +60,7 @@ export const loadProjectTasks = (projectId: string) => {
   return queryOptions({
     queryKey: ["project-tasks", projectId],
     queryFn: () =>
-      apiCall.get<ProjectTaskType[]>("/tasks", {
+      apiCall.get<ProjectTaskType[]>("/Tasks", {
         params: { projectId },
       }),
   });
@@ -74,4 +78,16 @@ export const createProject = (
   return apiCall.post("/project/create", data, {
     params: { subjectId },
   });
+};
+
+export const createSubject = (data: {
+  name: string;
+  description: string;
+  color: string;
+}) => {
+  return apiCall.post("/Subjects/create", data);
+};
+
+export const joinSubject = (subjectId: string) => {
+  return apiCall.post("/Subjects/join", { subjectId });
 };
