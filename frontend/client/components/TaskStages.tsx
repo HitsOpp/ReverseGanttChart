@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { FiEdit2, FiTrash2, FiCheck } from "react-icons/fi";
+import { FiEdit2, FiTrash2, FiCheck, FiX } from "react-icons/fi";
 import { useProfile } from "@/hooks/useProfile";
 import { apiCall } from "client/utils";
 import { CreateStageModal } from "./CreateStageModal";
 import { CompleteStageModal } from "./CompleteStageModal";
+import { UncompleteStageModal } from "./UncompleteStageModal";
 import { loadMyTeam } from "@/api";
 
 interface StageType {
@@ -51,6 +52,10 @@ export const TaskStages = ({
 
   const [editingStage, setEditingStage] = useState<StageType | null>(null);
   const [completeStageData, setCompleteStageData] = useState<{
+    stageId: string;
+    taskTeams: StageType["teamProgress"];
+  } | null>(null);
+  const [uncompleteStageData, setUncompleteStageData] = useState<{
     stageId: string;
     taskTeams: StageType["teamProgress"];
   } | null>(null);
@@ -154,6 +159,18 @@ export const TaskStages = ({
                 </button>
 
                 <button
+                  onClick={() =>
+                    setUncompleteStageData({
+                      stageId: stage.id,
+                      taskTeams: stage.teamProgress,
+                    })
+                  }
+                  className="px-3 py-1.5 text-xs bg-red-50 text-red-700 border border-red-200 rounded-md hover:bg-red-100"
+                >
+                  <FiX />
+                </button>
+
+                <button
                   onClick={() => setEditingStage(stage)}
                   className="p-2 rounded-md border border-gray-200 text-gray-400 hover:text-blue-600 hover:bg-blue-50"
                 >
@@ -204,6 +221,14 @@ export const TaskStages = ({
           stageId={completeStageData.stageId}
           taskTeams={completeStageData.taskTeams}
           onClose={() => setCompleteStageData(null)}
+        />
+      )}
+
+      {uncompleteStageData && (
+        <UncompleteStageModal
+          stageId={uncompleteStageData.stageId}
+          taskTeams={uncompleteStageData.taskTeams}
+          onClose={() => setUncompleteStageData(null)}
         />
       )}
     </div>
