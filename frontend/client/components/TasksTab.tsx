@@ -141,12 +141,10 @@ export const TasksTab = ({ subjectId }: TasksTabProps) => {
               </div>
 
               {isOpen && (
-                <ProjectTasks projectId={project.id} subjectId={subjectId} />
-              )}
-              {isOpen && <ProjectTasks projectId={project.id} />}
                 <>
                   <ProjectTasks
                     projectId={project.id}
+                    subjectId={subjectId}
                     isTeacher={isTeacher}
                     onTaskEdit={(task) => {
                       setTaskModalProjectId(project.id);

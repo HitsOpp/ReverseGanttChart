@@ -1,18 +1,27 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { FiCheck } from "react-icons/fi";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { FiCheck, FiEdit2, FiTrash2 } from "react-icons/fi";
 import { useProfile } from "@/hooks/useProfile";
-import { loadProjectTasks, loadMyTeam } from "client/api";
+import { deleteTask, loadProjectTasks, loadMyTeam } from "client/api";
 import { CompleteTaskModal } from "./CompleteTaskModal";
+import type { ProjectTaskType } from "client/shared";
 
 interface ProjectTasksProps {
   projectId: string;
   subjectId: string;
+  isTeacher?: boolean;
+  onTaskEdit?: (task: ProjectTaskType) => void;
 }
 
-export const ProjectTasks = ({ projectId, subjectId }: ProjectTasksProps) => {
+export const ProjectTasks = ({
+  projectId,
+  subjectId,
+  isTeacher,
+  onTaskEdit,
+}: ProjectTasksProps) => {
+  const queryClient = useQueryClient();
   const { data: profile } = useProfile();
-  const isTeacher = profile?.isTeacher;
+  const isUserTeacher = profile?.isTeacher || isTeacher;
 
   const {
     data: tasks,
@@ -22,24 +31,6 @@ export const ProjectTasks = ({ projectId, subjectId }: ProjectTasksProps) => {
   const { data: myTeam } = useQuery(loadMyTeam(subjectId));
 
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-import { deleteTask, loadProjectTasks } from "client/api";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FiEdit2, FiTrash2 } from "react-icons/fi";
-import type { ProjectTaskType } from "client/shared";
-
-interface ProjectTasksProps {
-  projectId: string;
-  isTeacher?: boolean;
-  onTaskEdit?: (task: ProjectTaskType) => void;
-}
-
-export const ProjectTasks = ({
-  projectId,
-  isTeacher,
-  onTaskEdit,
-}: ProjectTasksProps) => {
-  const queryClient = useQueryClient();
-  const { data, isLoading, isError } = useQuery(loadProjectTasks(projectId));
 
   const deleteTaskMutation = useMutation({
     mutationFn: (taskId: string) => deleteTask(taskId),
@@ -86,8 +77,9 @@ export const ProjectTasks = ({
           <div
             key={task.id ?? index}
             className={`
-              flex justify-between items-center px-12 py-3 text-sm rounded-lg
+              flex justify-between items-center px-12 py-3 text-sm
               ${taskBgClass} ${index !== tasks.length - 1 ? "mb-2" : ""}
+              hover:bg-gray-50
             `}
           >
             <div>
@@ -104,62 +96,47 @@ export const ProjectTasks = ({
                 </span>
               )}
 
-              {isTeacher && (
-                <button
-                  onClick={() => setSelectedTaskId(task.id)}
-                  className="flex items-center gap-1 px-3 py-1.5 text-xs
+              {isUserTeacher && (
+                <>
+                  <button
+                    onClick={() => setSelectedTaskId(task.id)}
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs
                              bg-green-50 text-green-700 border border-green-200
                              rounded-md hover:bg-green-100 transition"
-                >
-                  <FiCheck />
-                  Засчитать
-                </button>
+                  >
+                    <FiCheck />
+                    Засчитать
+                  </button>
+
+                  <button
+                    onClick={() => onTaskEdit?.(task)}
+                    className="p-2 rounded-md border border-gray-200 text-gray-400 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition"
+                    aria-label="Редактировать задачу"
+                  >
+                    <FiEdit2 className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    onClick={() => deleteTaskMutation.mutate(task.id)}
+                    className="p-2 rounded-md border border-gray-200 text-gray-400 hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition"
+                    aria-label="Удалить задачу"
+                  >
+                    <FiTrash2 className="w-4 h-4" />
+                  </button>
+                </>
               )}
             </div>
-    <div className="bg-white">
-      {data.map((task, index) => (
-        <div
-          key={task.id ?? index}
-          className={`
-            flex justify-between items-center px-12 py-3 text-sm hover:bg-gray-50
-            ${index !== data.length - 1 ? "border-b border-gray-200" : ""}
-          `}
-        >
-          <div>
-            <div className="font-medium">{task.name}</div>
-            <div className="text-gray-500 text-xs">{task.description}</div>
           </div>
         );
       })}
 
-      {selectedTaskId && (
+      {selectedTaskId && isUserTeacher && (
         <CompleteTaskModal
           taskId={selectedTaskId}
           subjectId={subjectId}
           onClose={() => setSelectedTaskId(null)}
         />
       )}
-
-          {isTeacher && (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => onTaskEdit?.(task)}
-                className="p-2 rounded-md border border-gray-200 text-gray-400 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition"
-                aria-label="Редактировать задачу"
-              >
-                <FiEdit2 className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => deleteTaskMutation.mutate(task.id)}
-                className="p-2 rounded-md border border-gray-200 text-gray-400 hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition"
-                aria-label="Удалить задачу"
-              >
-                <FiTrash2 className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-        </div>
-      ))}
     </div>
   );
 };
