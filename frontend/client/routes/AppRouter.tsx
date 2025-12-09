@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import {
   WelcomePage,
   SubjectPage,
@@ -12,11 +12,14 @@ export const AppRouter = () => {
   return (
     <Routes>
       <Route path="/login" element={<WelcomePage />} />
-      <Route path="/profile" element={
-        <ProtectedRouter>
-          <ProfilePage />
-        </ProtectedRouter>
-      } />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRouter>
+            <ProfilePage />
+          </ProtectedRouter>
+        }
+      />
       <Route
         path="/subjects"
         element={
@@ -25,6 +28,7 @@ export const AppRouter = () => {
           </ProtectedRouter>
         }
       />
+      <Route path="/" element={<Navigate to="/login" replace />} />
 
       <Route
         path="/subjects/:id/:tab?"

@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { loadSubjectById } from "client/api";
 import { FiCheckSquare, FiInfo, FiUser, FiUsers } from "react-icons/fi";
-import { TeamTab, UsersTab } from "@/components";
+import { TeamTab, UsersTab, TasksTab } from "client/components";
 
 export const SubjectDetailPage = () => {
   const navigate = useNavigate();
@@ -67,7 +67,7 @@ export const SubjectDetailPage = () => {
 
       <div className="p-6 text-lg">
         {selectedTab === "about" && <p>{subject.description}</p>}
-        {selectedTab === "tasks" && <p>Список заданий...</p>}
+        {selectedTab === "tasks" && <TasksTab subjectId={id!} />}
         {selectedTab === "team" && <TeamTab subjectId={id!} />}
         {selectedTab === "users" && <UsersTab subjectId={id!} />}
       </div>
