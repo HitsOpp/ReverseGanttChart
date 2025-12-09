@@ -67,7 +67,7 @@ export const ProfilePage = () => {
                 </div>
 
                 <button
-                  className="text-blue-600 hover:underline text-sm"
+                  className="inline-flex items-center px-4 py-2 text-sm rounded-lg border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition"
                   onClick={() => {
                     setFullName(data?.fullName || "");
                     setIsEditing(true);
