@@ -17,7 +17,7 @@ export const TeamTab = ({ subjectId }: TeamTabProps) => {
 
   const { data: myTeam } = useQuery(loadMyTeam(subjectId));
 
-  const { data: teams } = useQuery({
+  const { data: teams, isLoading } = useQuery({
     ...loadAllTeams(subjectId),
     enabled: !myTeam,
   });
@@ -27,9 +27,7 @@ export const TeamTab = ({ subjectId }: TeamTabProps) => {
       apiCall.post(
         "/Teams/join",
         { techStack: "back" },
-        {
-          params: { teamId },
-        }
+        { params: { teamId } }
       ),
 
     onMutate: async (teamId) => {
@@ -85,6 +83,14 @@ export const TeamTab = ({ subjectId }: TeamTabProps) => {
       </div>
 
       <div className="bg-white shadow-sm rounded-lg overflow-hidden p-2">
+        {isLoading && (
+          <p className="p-4 text-gray-400 text-sm">Загрузка команд...</p>
+        )}
+
+        {!isLoading && !teams?.length && (
+          <p className="p-3 text-gray-500">В данном предмете ещё нет команд</p>
+        )}
+
         {teams?.map((team) => (
           <div
             key={team.id}
