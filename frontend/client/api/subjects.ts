@@ -8,6 +8,7 @@ import {
 
 const subjectKeyFactory = {
   loadSubject: () => ["loadSubject"],
+  loadSubjectById: (subjectId: string) => [subjectId, "loadSubject"],
   loadPersonsInSubject: (subjectId: string, role: string) => [
     subjectId,
     role,
@@ -23,7 +24,7 @@ export const loadSubjects = () => {
 };
 export const loadSubjectById = (subjectId: string) => {
   return queryOptions({
-    queryKey: subjectKeyFactory.loadSubject(),
+    queryKey: subjectKeyFactory.loadSubjectById(subjectId),
     queryFn: () =>
       apiCall.get<loadSubjectType>(`/Subjects/information`, {
         params: { subjectId },
@@ -49,5 +50,28 @@ export const loadSubjectProjects = (subjectId: string) => {
       apiCall.get<loadProjectType[]>("/Projects/subject-projects", {
         params: { subjectId },
       }),
+  });
+};
+export const loadProjectTasks = (projectId: string) => {
+  return queryOptions({
+    queryKey: ["project-tasks", projectId],
+    queryFn: () =>
+      apiCall.get<ProjectTaskType[]>("/tasks", {
+        params: { projectId },
+      }),
+  });
+};
+
+export const createProject = (
+  subjectId: string,
+  data: {
+    name: string;
+    description: string;
+    startDate: string;
+    endDate: string;
+  }
+) => {
+  return apiCall.post("/Projects/create", data, {
+    params: { subjectId },
   });
 };

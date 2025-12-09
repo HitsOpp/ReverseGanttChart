@@ -24,7 +24,7 @@ export const SubjectPage = () => {
               return (
                 <SubjectCard
                   key={subject.id}
-                  customHeaderColor="#8B5CF6"
+                  headerColor={subject.headerColor}
                   title={subject.name}
                   institution={subject.description}
                   onNavigate={(tab) =>

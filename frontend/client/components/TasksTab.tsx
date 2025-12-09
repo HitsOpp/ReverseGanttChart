@@ -1,19 +1,23 @@
-import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { FiPlusSquare, FiClipboard } from "react-icons/fi";
+import { FiPlusSquare, FiClipboard, FiChevronDown } from "react-icons/fi";
 import { useProfile } from "@/hooks/useProfile";
 import { loadSubjectProjects } from "client/api";
+import { useState } from "react";
+import { ProjectTasks, CreateProjectModal } from "client/components";
 
 interface TasksTabProps {
   subjectId: string;
 }
 
 export const TasksTab = ({ subjectId }: TasksTabProps) => {
-  const navigate = useNavigate();
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const { data: Profile } = useProfile();
+  const isTeacher = Profile?.isTeacher && Profile.isTeacher;
 
   const { data, isLoading, isError } = useQuery(loadSubjectProjects(subjectId));
-  const isTeacher = Profile?.isTeacher && Profile.isTeacher;
+
+  const [openedProjectId, setOpenedProjectId] = useState<string | null>(null);
+
   return (
     <>
       <div className="bg-white shadow-sm rounded-lg overflow-hidden p-6 flex justify-between items-center">
@@ -21,7 +25,7 @@ export const TasksTab = ({ subjectId }: TasksTabProps) => {
 
         {isTeacher && (
           <button
-            onClick={() => navigate(`/Projects/create?subjectId=${subjectId}`)}
+            onClick={() => setIsCreateOpen(true)}
             className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
           >
             <FiPlusSquare className="w-5 h-5" />
@@ -41,30 +45,55 @@ export const TasksTab = ({ subjectId }: TasksTabProps) => {
           <p className="p-4 text-gray-500">Итоговых проектов пока нет</p>
         )}
 
-        {data?.map((project, index) => (
-          <div
-            key={project.id ?? index}
-            className={`
-              p-4 flex justify-between items-center
-              ${index !== data.length - 1 ? "border-b border-gray-200" : ""}
-            `}
-          >
-            <div className="flex items-start gap-3">
-              <FiClipboard className="w-5 h-5 text-gray-500 mt-1" />
+        {data?.map((project, index) => {
+          const isOpen = openedProjectId === project.id;
 
-              <div>
-                <div className="font-medium text-lg">{project.name}</div>
-                <div className="text-gray-500 text-sm">
-                  {project.description}
-                </div>
-                <div className="text-gray-400 text-xs mt-1">
-                  {new Date(project.startDate).toLocaleDateString()} —{" "}
-                  {new Date(project.endDate).toLocaleDateString()}
+          return (
+            <div
+              key={project.id ?? index}
+              className={`
+                ${index !== data.length - 1 ? "border-b border-gray-200" : ""}
+              `}
+            >
+              <div
+                onClick={() => setOpenedProjectId(isOpen ? null : project.id)}
+                className="p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50"
+              >
+                <div className="flex items-start gap-3">
+                  <FiChevronDown
+                    className={`
+                      w-5 h-5 mt-1 transition-transform
+                      ${isOpen ? "rotate-180" : ""}
+                    `}
+                  />
+
+                  <FiClipboard className="w-5 h-5 text-gray-500 mt-1" />
+
+                  <div>
+                    <div className="font-medium text-lg">{project.name}</div>
+
+                    <div className="text-gray-500 text-sm">
+                      {project.description}
+                    </div>
+
+                    <div className="text-gray-400 text-xs mt-1">
+                      {new Date(project.startDate).toLocaleDateString()} —{" "}
+                      {new Date(project.endDate).toLocaleDateString()}
+                    </div>
+                  </div>
                 </div>
               </div>
+
+              {isOpen && <ProjectTasks projectId={project.id} />}
+              {isCreateOpen && (
+                <CreateProjectModal
+                  subjectId={subjectId}
+                  onClose={() => setIsCreateOpen(false)}
+                />
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </>
   );
