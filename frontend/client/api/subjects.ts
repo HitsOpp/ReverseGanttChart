@@ -60,7 +60,7 @@ export const loadProjectTasks = (projectId: string) => {
   return queryOptions({
     queryKey: ["project-tasks", projectId],
     queryFn: () =>
-      apiCall.get<ProjectTaskType[]>("/Tasks", {
+      apiCall.get<ProjectTaskType[]>("/tasks", {
         params: { projectId },
       }),
   });
@@ -80,6 +80,20 @@ export const createProject = (
   });
 };
 
+export const editProject = (
+  projectId: string,
+  data: {
+    name: string;
+    description: string;
+    startDate: string;
+    endDate: string;
+  }
+) => {
+  return apiCall.put("/Projects/edit", data, {
+    params: { projectId },
+  });
+};
+
 export const createSubject = (data: {
   name: string;
   description: string;
@@ -90,4 +104,44 @@ export const createSubject = (data: {
 
 export const joinSubject = (subjectId: string) => {
   return apiCall.post("/Subjects/join", { subjectId });
+};
+
+export const createTask = (
+  projectId: string,
+  data: {
+    name: string;
+    description: string;
+    dueDate?: string;
+    priority?: number;
+  }
+) => {
+  return apiCall.post("/tasks/create", data, {
+    params: { projectId },
+  });
+};
+
+export const deleteProject = (projectId: string) => {
+  return apiCall.delete("/Projects/delete", {
+    params: { projectId },
+  });
+};
+
+export const deleteTask = (taskId: string) => {
+  return apiCall.delete("/Projects/tasks/delete", {
+    params: { taskId },
+  });
+};
+
+export const editTask = (
+  taskId: string,
+  data: {
+    name: string;
+    description: string;
+    dueDate?: string;
+    priority?: number;
+  }
+) => {
+  return apiCall.put("/Projects/tasks/edit", data, {
+    params: { taskId },
+  });
 };
