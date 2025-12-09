@@ -13,4 +13,6 @@ export interface ProjectTaskType {
   id: string;
   name: string;
   description: string;
+  dueDate?: string;
+  priority?: number;
 }

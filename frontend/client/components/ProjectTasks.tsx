@@ -22,6 +22,33 @@ export const ProjectTasks = ({ projectId, subjectId }: ProjectTasksProps) => {
   const { data: myTeam } = useQuery(loadMyTeam(subjectId));
 
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+import { deleteTask, loadProjectTasks } from "client/api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { FiEdit2, FiTrash2 } from "react-icons/fi";
+import type { ProjectTaskType } from "client/shared";
+
+interface ProjectTasksProps {
+  projectId: string;
+  isTeacher?: boolean;
+  onTaskEdit?: (task: ProjectTaskType) => void;
+}
+
+export const ProjectTasks = ({
+  projectId,
+  isTeacher,
+  onTaskEdit,
+}: ProjectTasksProps) => {
+  const queryClient = useQueryClient();
+  const { data, isLoading, isError } = useQuery(loadProjectTasks(projectId));
+
+  const deleteTaskMutation = useMutation({
+    mutationFn: (taskId: string) => deleteTask(taskId),
+    onSuccess: () => {
+      queryClient.refetchQueries({
+        queryKey: loadProjectTasks(projectId).queryKey,
+      });
+    },
+  });
 
   if (isLoading)
     return <p className="p-4 pl-12 text-gray-400">Загрузка задач...</p>;
@@ -100,6 +127,27 @@ export const ProjectTasks = ({ projectId, subjectId }: ProjectTasksProps) => {
           onClose={() => setSelectedTaskId(null)}
         />
       )}
+
+          {isTeacher && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => onTaskEdit?.(task)}
+                className="p-2 rounded-md border border-gray-200 text-gray-400 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition"
+                aria-label="Редактировать задачу"
+              >
+                <FiEdit2 className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => deleteTaskMutation.mutate(task.id)}
+                className="p-2 rounded-md border border-gray-200 text-gray-400 hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition"
+                aria-label="Удалить задачу"
+              >
+                <FiTrash2 className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   );
 };

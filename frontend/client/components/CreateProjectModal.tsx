@@ -1,29 +1,40 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createProject } from "@/api";
+import { createProject, editProject } from "@/api";
 import { loadSubjectProjects } from "client/api";
+import type { loadProjectType } from "client/shared";
 
 interface Props {
   subjectId: string;
   onClose: () => void;
+  project?: loadProjectType;
 }
 
-export const CreateProjectModal = ({ subjectId, onClose }: Props) => {
+export const CreateProjectModal = ({ subjectId, onClose, project }: Props) => {
   const queryClient = useQueryClient();
 
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const isEdit = !!project;
+
+  const [name, setName] = useState(project?.name ?? "");
+  const [description, setDescription] = useState(project?.description ?? "");
+  const [startDate, setStartDate] = useState(project?.startDate ?? "");
+  const [endDate, setEndDate] = useState(project?.endDate ?? "");
 
   const mutation = useMutation({
     mutationFn: () =>
-      createProject(subjectId, {
-        name,
-        description,
-        startDate,
-        endDate,
-      }),
+      isEdit && project
+        ? editProject(project.id, {
+            name,
+            description,
+            startDate,
+            endDate,
+          })
+        : createProject(subjectId, {
+            name,
+            description,
+            startDate,
+            endDate,
+          }),
 
     onSuccess: async () => {
       await queryClient.refetchQueries({
@@ -50,7 +61,7 @@ export const CreateProjectModal = ({ subjectId, onClose }: Props) => {
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-2xl font-semibold mb-5">
-          Создание итогового проекта
+          {isEdit ? "Редактирование проекта" : "Создание итогового проекта"}
         </h2>
 
         <div className="space-y-4">
@@ -104,7 +115,13 @@ export const CreateProjectModal = ({ subjectId, onClose }: Props) => {
               }
             `}
           >
-            {mutation.isPending ? "Создание..." : "Создать проект"}
+            {mutation.isPending
+              ? isEdit
+                ? "Сохранение..."
+                : "Создание..."
+              : isEdit
+                ? "Сохранить"
+                : "Создать проект"}
           </button>
         </div>
       </div>
