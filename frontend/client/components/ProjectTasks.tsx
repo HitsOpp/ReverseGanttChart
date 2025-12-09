@@ -6,10 +6,12 @@ import {
   FiTrash2,
   FiChevronDown,
   FiClock,
+  FiX,
 } from "react-icons/fi";
 import { useProfile } from "@/hooks/useProfile";
 import { deleteTask, loadProjectTasks, loadMyTeam } from "client/api";
 import { CompleteTaskModal } from "./CompleteTaskModal";
+import { UncompleteTaskModal } from "./UncompleteTaskModal";
 import { TaskStages } from "./TaskStages";
 import type { ProjectTaskType } from "client/shared";
 
@@ -38,6 +40,7 @@ export const ProjectTasks = ({
   const { data: myTeam } = useQuery(loadMyTeam(subjectId));
 
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [uncompleteTaskId, setUncompleteTaskId] = useState<string | null>(null);
   const [openedTaskId, setOpenedTaskId] = useState<string | null>(null);
 
   const deleteTaskMutation = useMutation({
@@ -75,11 +78,7 @@ export const ProjectTasks = ({
         let isOverdue = false;
 
         if (teamProgressForMe) {
-          if (
-            teamProgressForMe.status === 2 ||
-            teamProgressForMe.completedStageCount ===
-              teamProgressForMe.totalStageCount
-          ) {
+          if (teamProgressForMe.status === 2) {
             taskBgClass = "bg-green-50";
             taskStatusText = "Зачтено";
             taskStatusClass = "text-green-700";
@@ -167,6 +166,16 @@ export const ProjectTasks = ({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
+                        setUncompleteTaskId(task.id);
+                      }}
+                      className="px-3 py-1.5 text-xs bg-red-50 text-red-700 border border-red-200 rounded-md hover:bg-red-100"
+                    >
+                      <FiX />
+                    </button>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
                         onTaskEdit?.(task);
                       }}
                       className="p-2 border rounded-md text-gray-400 hover:text-blue-600"
@@ -204,6 +213,14 @@ export const ProjectTasks = ({
           taskId={selectedTaskId}
           subjectId={subjectId}
           onClose={() => setSelectedTaskId(null)}
+        />
+      )}
+
+      {uncompleteTaskId && isUserTeacher && (
+        <UncompleteTaskModal
+          taskId={uncompleteTaskId}
+          subjectId={subjectId}
+          onClose={() => setUncompleteTaskId(null)}
         />
       )}
     </div>
