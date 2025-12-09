@@ -24,7 +24,13 @@ export const TeamTab = ({ subjectId }: TeamTabProps) => {
 
   const joinMutation = useMutation({
     mutationFn: (teamId: string) =>
-      apiCall.post(`/Teams/${teamId}/join`, { techStack: "string" }),
+      apiCall.post(
+        "/Teams/join",
+        { techStack: "back" },
+        {
+          params: { teamId },
+        }
+      ),
 
     onMutate: async (teamId) => {
       await queryClient.cancelQueries({

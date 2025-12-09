@@ -30,9 +30,16 @@ export const MyTeamView = ({ team, subjectId, onLeave }: MyTeamViewProps) => {
     window.location.reload();
   };
   const queryClient = useQueryClient();
-
+  const teamId = team.id;
   const leaveMutation = useMutation({
-    mutationFn: () => apiCall.post(`/Teams/${team.id}/leave`),
+    mutationFn: () =>
+      apiCall.post(
+        "/Teams/leave",
+        {},
+        {
+          params: { teamId },
+        }
+      ),
 
     onSuccess: async () => {
       queryClient.removeQueries({

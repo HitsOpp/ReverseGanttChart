@@ -14,5 +14,5 @@ export const loadProfileData = () => {
 };
 
 export const updateProfileName = (fullName: string) => {
-  return apiCall.put("/Auth/profile", { fullName });
+  return apiCall.put("/profile/edit", { fullName });
 };

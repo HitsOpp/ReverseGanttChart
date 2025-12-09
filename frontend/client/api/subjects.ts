@@ -71,7 +71,7 @@ export const createProject = (
     endDate: string;
   }
 ) => {
-  return apiCall.post("/Projects/create", data, {
+  return apiCall.post("/project/create", data, {
     params: { subjectId },
   });
 };

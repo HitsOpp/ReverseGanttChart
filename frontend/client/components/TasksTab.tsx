@@ -84,17 +84,19 @@ export const TasksTab = ({ subjectId }: TasksTabProps) => {
                 </div>
               </div>
 
-              {isOpen && <ProjectTasks projectId={project.id} />}
-              {isCreateOpen && (
-                <CreateProjectModal
-                  subjectId={subjectId}
-                  onClose={() => setIsCreateOpen(false)}
-                />
+              {isOpen && (
+                <ProjectTasks projectId={project.id} subjectId={subjectId} />
               )}
             </div>
           );
         })}
       </div>
+      {isCreateOpen && (
+        <CreateProjectModal
+          subjectId={subjectId}
+          onClose={() => setIsCreateOpen(false)}
+        />
+      )}
     </>
   );
 };

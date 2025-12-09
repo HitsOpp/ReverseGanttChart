@@ -16,8 +16,8 @@ export interface AuthResponse {
 }
 
 export const AuthApi = {
-  login: (data: LoginDto) => apiCall.post<AuthResponse>("/Auth/login", data),
+  login: (data: LoginDto) => apiCall.post<AuthResponse>("/login", data),
   register: (data: RegisterDto) =>
-    apiCall.post<AuthResponse>("/Auth/register", data),
+    apiCall.post<AuthResponse>("/register", data),
   me: () => apiCall.get<AuthResponse>("/Auth/me"),
 };

@@ -40,13 +40,11 @@ export const CreateProjectModal = ({ subjectId, onClose }: Props) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* BACKDROP */}
       <div
         className="absolute inset-0 bg-black/30 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      {/* MODAL */}
       <div
         className="relative z-10 bg-white w-full max-w-lg rounded-xl shadow-xl p-6 animate-fade-in"
         onClick={(e) => e.stopPropagation()}
