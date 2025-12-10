@@ -195,11 +195,14 @@ export const editTask = (
     params: { taskId },
   });
 };
+interface loadSubjectRole {
+  role: string;
+}
 export const loadSubjectRole = (subjectId: string) => {
   return queryOptions({
     queryKey: ["subjectRole", subjectId],
     queryFn: () =>
-      apiCall.get("/Subjects/my-role", {
+      apiCall.get<loadSubjectRole>("/Subjects/my-role", {
         params: { subjectId },
       }),
   });

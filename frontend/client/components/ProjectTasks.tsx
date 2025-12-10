@@ -101,6 +101,7 @@ export const ProjectTasks = ({
           const dueDate = task.dueDate ? new Date(task.dueDate) : null;
           if (dueDate && dueDate < now && teamProgressForMe.status !== 2) {
             isOverdue = true;
+            console.log(isOverdue);
             taskBgClass = "bg-red-50";
             taskStatusText = "Просрочено";
             taskStatusClass = "text-red-700";
