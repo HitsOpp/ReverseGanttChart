@@ -4,8 +4,10 @@ import { FiPlus, FiUserPlus } from "react-icons/fi";
 import { CreateTeamModal } from "./CreateTeamModal";
 import { MyTeamView } from "./MyTeamView";
 import { loadMyTeam, loadAllTeams, teamsKeyFactory } from "@/api/teams";
+import { loadSubjectRole } from "client/api";
 import { apiCall } from "client/utils";
 import type { LoadAllTeams } from "@/shared";
+import { useProfile } from "@/hooks/useProfile";
 
 interface TeamTabProps {
   subjectId: string;
@@ -18,6 +20,9 @@ export const TeamTab = ({ subjectId }: TeamTabProps) => {
     Record<string, string>
   >({});
 
+  const { data: profile } = useProfile();
+  const { data: role } = useQuery(loadSubjectRole(subjectId));
+
   const { data: myTeam } = useQuery(loadMyTeam(subjectId));
 
   const { data: teams, isLoading } = useQuery({
@@ -25,7 +30,7 @@ export const TeamTab = ({ subjectId }: TeamTabProps) => {
     enabled: !myTeam,
   });
 
-  const ROLE_OPTIONS = [
+  const BASE_ROLE_OPTIONS = [
     { value: "frontend", label: "Фронтенд" },
     { value: "backend", label: "Бэкенд" },
     { value: "fullstack", label: "Фуллстек" },
@@ -33,6 +38,15 @@ export const TeamTab = ({ subjectId }: TeamTabProps) => {
     { value: "design", label: "Дизайн" },
     { value: "qa", label: "Тестирование" },
   ];
+
+  const isTeacher = profile?.isTeacher;
+  const isAssistant = role?.role === "Assist";
+
+  const ROLE_OPTIONS = isTeacher
+    ? [{ value: "teacher", label: "Преподаватель" }]
+    : isAssistant
+    ? [{ value: "assistant", label: "Ассистент" }]
+    : BASE_ROLE_OPTIONS;
 
   const joinMutation = useMutation({
     mutationFn: (variables: { teamId: string; techStack: string }) => {
@@ -88,8 +102,8 @@ export const TeamTab = ({ subjectId }: TeamTabProps) => {
 
   return (
     <>
-      <div className="p-6 bg-white shadow-sm rounded-lg overflow-hidden flex justify-between mb-4 border-b border-gray-200">
-        <h1 className="text-4xl font-normal">Команды</h1>
+      <div className="p-4 sm:p-6 bg-white shadow-sm rounded-lg overflow-hidden flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 border-b border-gray-200">
+        <h1 className="text-2xl sm:text-4xl font-normal">Команды</h1>
 
         <button
           onClick={() => setIsModalOpen(true)}
@@ -99,7 +113,7 @@ export const TeamTab = ({ subjectId }: TeamTabProps) => {
         </button>
       </div>
 
-      <div className="bg-white shadow-sm rounded-lg overflow-hidden p-2">
+      <div className="bg-white shadow-sm rounded-lg overflow-hidden p-2 sm:p-4">
         {isLoading && (
           <p className="p-4 text-gray-400 text-sm">Загрузка команд...</p>
         )}
@@ -111,14 +125,14 @@ export const TeamTab = ({ subjectId }: TeamTabProps) => {
         {teams?.map((team) => (
           <div
             key={team.id}
-            className="p-4 flex justify-between items-center border-b border-gray-200 last:border-none"
+            className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-gray-200 last:border-none"
           >
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1 sm:gap-2">
               <div className="text-lg font-medium">{team.name}</div>
               <div className="text-gray-500 text-sm">
                 Участников: {team.memberCount}
               </div>
-              <div className="flex items-center gap-2 text-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm">
                 <span className="text-gray-500">Ваша роль:</span>
                 <select
                   value={selectedRoleByTeam[team.id] ?? ""}
@@ -128,7 +142,7 @@ export const TeamTab = ({ subjectId }: TeamTabProps) => {
                       [team.id]: e.target.value,
                     }))
                   }
-                  className="border border-gray-300 rounded-md px-2 py-1 text-sm bg-white"
+                  className="border border-gray-300 rounded-md px-2 py-1 text-sm bg-white max-w-xs"
                 >
                   <option value="" disabled>
                     Выберите роль
@@ -153,7 +167,7 @@ export const TeamTab = ({ subjectId }: TeamTabProps) => {
                 joinMutation.status === "pending" ||
                 !selectedRoleByTeam[team.id]
               }
-              className={`px-3 py-2 border rounded-lg flex gap-2 items-center transition ${
+              className={`w-full sm:w-auto px-3 py-2 border rounded-lg flex justify-center sm:justify-between gap-2 items-center transition ${
                 joinMutation.status === "pending" ||
                 !selectedRoleByTeam[team.id]
                   ? "bg-gray-400 cursor-not-allowed text-white"

@@ -104,10 +104,10 @@ export const UsersTab = ({ subjectId }: UsersTabProps) => {
 
   return (
     <>
-      <div className="bg-white shadow-sm rounded-lg overflow-hidden p-6 flex justify-between items-center">
-        <h1 className="text-4xl font-normal">Пользователи</h1>
+      <div className="bg-white shadow-sm rounded-lg overflow-hidden p-4 sm:p-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+        <h1 className="text-2xl sm:text-4xl font-normal">Пользователи</h1>
 
-        <div className="flex items-center bg-gray-200 rounded-md p-1">
+        <div className="flex items-center bg-gray-200 rounded-md p-1 self-start sm:self-auto">
           <button
             onClick={() => setSelectedGroup("students")}
             className={`
@@ -141,17 +141,19 @@ export const UsersTab = ({ subjectId }: UsersTabProps) => {
         </div>
       </div>
 
-      <div className="mt-5 bg-white shadow-sm rounded-lg overflow-hidden">
-        {isLoading && <p className="p-4 text-gray-500">Загрузка...</p>}
+      <div className="mt-4 sm:mt-5 bg-white shadow-sm rounded-lg overflow-hidden">
+        {isLoading && <p className="p-4 text-gray-500 text-sm">Загрузка...</p>}
         {isError && (
-          <p className="p-4 text-red-500">Ошибка при загрузке данных</p>
+          <p className="p-4 text-red-500 text-sm">
+            Ошибка при загрузке данных
+          </p>
         )}
 
         {usersToDisplay.map((user, index) => (
           <div
             key={user.userId ?? user.id ?? index}
             className={`
-              p-4 flex justify-between items-center
+              p-3 sm:p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2
               ${
                 index !== usersToDisplay.length - 1
                   ? "border-b border-gray-200"
@@ -160,8 +162,10 @@ export const UsersTab = ({ subjectId }: UsersTabProps) => {
             `}
           >
             <div>
-              <div className="font-medium text-lg">{user.fullName}</div>
-              <div className="text-gray-500 text-sm">
+              <div className="font-medium text-base sm:text-lg">
+                {user.fullName}
+              </div>
+              <div className="text-gray-500 text-xs sm:text-sm">
                 {user.roleLabel}
               </div>
             </div>
@@ -173,7 +177,7 @@ export const UsersTab = ({ subjectId }: UsersTabProps) => {
                 }
                 disabled={grantAssistMutation.isPending}
                 className={`
-                  px-4 py-2 rounded-md text-sm font-medium transition
+                  px-3 py-2 rounded-md text-sm font-medium transition w-full sm:w-auto
                   ${
                     grantAssistMutation.isPending
                       ? "bg-gray-300 text-gray-600 cursor-not-allowed"
@@ -194,7 +198,7 @@ export const UsersTab = ({ subjectId }: UsersTabProps) => {
                 }
                 disabled={revokeAssistMutation.isPending}
                 className={`
-                  px-4 py-2 rounded-md text-sm font-medium transition
+                  px-3 py-2 rounded-md text-sm font-medium transition w-full sm:w-auto
                   ${
                     revokeAssistMutation.isPending
                       ? "bg-gray-300 text-gray-600 cursor-not-allowed"
