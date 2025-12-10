@@ -61,14 +61,16 @@ export const ProjectTasks = ({
   });
 
   if (isLoading)
-    return <p className="p-4 pl-12 text-gray-400">Загрузка задач...</p>;
+    return <p className="p-4 sm:pl-12 text-gray-400">Загрузка задач...</p>;
 
   if (isError)
-    return <p className="p-4 pl-12 text-red-500">Ошибка загрузки задач</p>;
+    return <p className="p-4 sm:pl-12 text-red-500">Ошибка загрузки задач</p>;
 
   if (!tasks?.length)
     return (
-      <p className="p-4 pl-12 text-gray-400">В этом проекте пока нет задач</p>
+      <p className="p-4 sm:pl-12 text-gray-400">
+        В этом проекте пока нет задач
+      </p>
     );
 
   const now = new Date();
@@ -122,13 +124,13 @@ export const ProjectTasks = ({
             <div
               onClick={() => setOpenedTaskId(isOpen ? null : task.id)}
               className={`
-                flex justify-between items-center px-12 py-3 text-sm
+                flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 px-4 sm:px-12 py-3 text-sm
                 cursor-pointer transition
                 ${taskBgClass}
                 hover:bg-gray-100
               `}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-start gap-3">
                 <FiChevronDown
                   className={`transition-transform ${
                     isOpen ? "rotate-180" : ""
@@ -149,7 +151,7 @@ export const ProjectTasks = ({
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 sm:self-start sm:ml-auto">
                 {teamProgressForMe && (
                   <span
                     className={`px-2 py-0.5 text-xs rounded ${taskStatusClass}`}

@@ -79,7 +79,12 @@ export const SubjectDetailPage = () => {
     },
   ];
 
-  if (!subject) return <p>Загрузка...</p>;
+  if (!subject)
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        Загрузка...
+      </div>
+    );
 
   const headerColor = subject.headerColor ?? subject.color ?? "#3B82F6";
   const isTeacher =
@@ -96,25 +101,29 @@ export const SubjectDetailPage = () => {
   return (
     <div className="min-h-screen bg-gray-100">
       <div
-        className="w-full pt-10 pb-10 pl-5 flex flex-col justify-end items-start"
+        className="w-full pt-10 pb-8 px-4 sm:px-8 flex flex-col justify-end items-start"
         style={{
           backgroundColor: headerColor,
           minHeight: "220px",
         }}
       >
-        <h1 className="text-5xl font-bold text-white">{subject.name}</h1>
-        <p className="text-white/90 mt-1 text-xl">Высшая IT школа</p>
+        <h1 className="text-3xl sm:text-5xl font-bold text-white break-words max-w-5xl">
+          {subject.name}
+        </h1>
+        <p className="text-white/90 mt-1 text-lg sm:text-xl">
+          Высшая IT школа
+        </p>
       </div>
 
-      <div className="flex items-center justify-between p-4 bg-white shadow border-b border-gray-200">
-        <div className="flex gap-3">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-3 sm:p-4 bg-white shadow border-b border-gray-200">
+        <div className="flex gap-2 sm:gap-3 overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
           {tabs.map((t) => (
             <button
               key={t.id}
               onClick={() => navigate(`/subjects/${id}/${t.id}`)}
               className={`
-              px-4 py-3 rounded-lg transition-all duration-200
-              flex items-center gap-2 border
+              flex items-center gap-2 border whitespace-nowrap
+              px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-all duration-200
               ${
                 selectedTab === t.id
                   ? "bg-blue-50 text-blue-700 border-blue-200"
@@ -123,13 +132,15 @@ export const SubjectDetailPage = () => {
             `}
             >
               {t.icon}
-              <span className="text-base font-light">{t.label}</span>
+              <span className="text-sm sm:text-base font-light">
+                {t.label}
+              </span>
             </button>
           ))}
         </div>
 
         {isTeacher && (
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <button
               onClick={openEdit}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-800 hover:border-blue-300 hover:text-blue-700 hover:bg-gray-50 text-sm transition"
@@ -153,9 +164,9 @@ export const SubjectDetailPage = () => {
         )}
       </div>
 
-      <div className="p-6 text-lg">
+      <div className="px-3 sm:px-6 py-5 text-base sm:text-lg">
         {selectedTab === "about" && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 space-y-5">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 sm:p-8 space-y-5">
             <div>
               <h2 className="text-2xl font-semibold mb-3">О предмете</h2>
               <p className="text-lg text-gray-700 leading-relaxed">
@@ -208,14 +219,14 @@ export const SubjectDetailPage = () => {
       </div>
 
       {isTeacher && isEditOpen && (
-        <div className="fixed inset-0 flex p-8 items-center justify-center z-50">
+        <div className="fixed inset-0 flex p-4 sm:p-8 items-center justify-center z-50">
           <div
             className="absolute inset-0 bg-black/20 backdrop-blur-sm"
             onClick={() => setIsEditOpen(false)}
           />
 
           <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-lg px-8 py-7 relative z-10"
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-lg px-4 sm:px-8 py-6 sm:py-7 relative z-10"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-2xl font-semibold mb-6">Редактировать предмет</h2>

@@ -1,5 +1,5 @@
 import { useProfile } from "@/hooks";
-import { QueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState, type FC, useEffect } from "react";
 import { FiBook, FiHelpCircle, FiUser, FiLogOut } from "react-icons/fi";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -12,7 +12,7 @@ interface SidePanelProps {
 type MenuItem = "subjects" | "support" | "profile";
 
 export const SidePanel: FC<SidePanelProps> = ({ isOpen, setIsOpen }) => {
-  const queryClient = new QueryClient();
+  const queryClient = useQueryClient();
   const { data } = useProfile();
   const navigate = useNavigate();
   const location = useLocation();
@@ -69,7 +69,7 @@ export const SidePanel: FC<SidePanelProps> = ({ isOpen, setIsOpen }) => {
 
       <button
         onClick={togglePanel}
-        className="fixed top-4 left-4 z-50 p-3 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow border border-gray-200"
+        className="fixed top-4 left-4 z-50 p-2 sm:p-3 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow border border-gray-200"
       >
         <svg
           className="w-6 h-6 text-gray-700"
@@ -91,12 +91,14 @@ export const SidePanel: FC<SidePanelProps> = ({ isOpen, setIsOpen }) => {
           fixed top-0 left-0 h-full bg-white shadow-xl z-50
           transform transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
-          w-80 flex flex-col
+          w-full sm:w-80 max-w-full flex flex-col overflow-y-auto
         `}
       >
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-4 sm:p-6 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-3xl font-bold text-gray-900">Students Tasks</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              Students Tasks
+            </h1>
             <button
               onClick={togglePanel}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -117,7 +119,7 @@ export const SidePanel: FC<SidePanelProps> = ({ isOpen, setIsOpen }) => {
             </button>
           </div>
 
-          <div className="text-sm text-gray-500 mb-4">Русский</div>
+          <div className="text-xs sm:text-sm text-gray-500 mb-4">Русский</div>
 
           <div className="space-y-2">
             <button
@@ -133,7 +135,7 @@ export const SidePanel: FC<SidePanelProps> = ({ isOpen, setIsOpen }) => {
               `}
             >
               <FiBook className="w-5 h-5" />
-              <div className="font-light text-base">Предметы</div>
+              <div className="font-light text-sm sm:text-base">Предметы</div>
             </button>
 
             <button
@@ -149,14 +151,12 @@ export const SidePanel: FC<SidePanelProps> = ({ isOpen, setIsOpen }) => {
               `}
             >
               <FiHelpCircle className="w-5 h-5" />
-              <div className="font-light text-base">Поддержка</div>
+              <div className="font-light text-sm sm:text-base">Поддержка</div>
             </button>
           </div>
         </div>
 
-        <div className="flex-1" />
-
-        <div className="p-6 border-t border-gray-200 bg-gray-50">
+        <div className="mt-auto p-4 sm:p-6 border-t border-gray-200 bg-gray-50">
           <button
             onClick={handleProfileClick}
             className={`

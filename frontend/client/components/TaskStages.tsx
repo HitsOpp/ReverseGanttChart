@@ -77,7 +77,7 @@ export const TaskStages = ({
 
   if (!stages?.length)
     return (
-      <div className="ml-13 bg-white border border-gray-100 rounded-xl">
+      <div className="ml-0 sm:ml-13 bg-white border border-gray-100 rounded-xl">
         <p className="p-4 text-gray-400">В этой задаче пока нет этапов</p>
 
         {canManageStages && (
@@ -110,7 +110,7 @@ export const TaskStages = ({
     );
 
   return (
-    <div className="ml-13 bg-white border border-gray-100 rounded-xl overflow-hidden">
+    <div className="ml-0 sm:ml-13 bg-white border border-gray-100 rounded-xl overflow-hidden">
       {stages.map((stage) => {
         const myProgress = stage.teamProgress?.[0];
 
@@ -124,7 +124,7 @@ export const TaskStages = ({
           <div
             key={stage.id}
             className={`
-              flex justify-between items-center px-6 py-3 text-sm
+              flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 px-4 sm:px-6 py-3 text-sm
               border-b border-gray-100 last:border-none
               transition ${bgClass}
             `}
