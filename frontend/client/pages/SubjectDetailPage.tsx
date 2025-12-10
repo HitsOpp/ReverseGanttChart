@@ -24,6 +24,7 @@ export const SubjectDetailPage = () => {
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editColor, setEditColor] = useState("#3B82F6");
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   const selectedTab = tab ?? "about";
 
@@ -45,6 +46,7 @@ export const SubjectDetailPage = () => {
       await queryClient.invalidateQueries({
         queryKey: subjectKeyFactory.loadSubject(),
       });
+      setIsDeleteConfirmOpen(false);
       navigate("/subjects");
     },
   });
@@ -150,9 +152,7 @@ export const SubjectDetailPage = () => {
               <span>Редактировать</span>
             </button>
             <button
-              onClick={() => {
-                deleteMutation.mutate();
-              }}
+              onClick={() => setIsDeleteConfirmOpen(true)}
               disabled={deleteMutation.isPending}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-800 hover:border-red-300 hover:text-red-600 hover:bg-gray-50 text-sm transition disabled:opacity-60"
               aria-label="Удалить предмет"
@@ -214,7 +214,12 @@ export const SubjectDetailPage = () => {
           </div>
         )}
         {selectedTab === "tasks" && <TasksTab subjectId={id!} />}
-        {selectedTab === "team" && <TeamTab subjectId={id!} />}
+        {selectedTab === "team" && (
+          <TeamTab
+            subjectId={id!}
+            canChooseRole={subject.currentUserRole !== "student"}
+          />
+        )}
         {selectedTab === "users" && <UsersTab subjectId={id!} />}
       </div>
 
@@ -291,6 +296,50 @@ export const SubjectDetailPage = () => {
                   {editMutation.isPending ? "Сохранение..." : "Сохранить"}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isTeacher && isDeleteConfirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+            onClick={() =>
+              !deleteMutation.isPending && setIsDeleteConfirmOpen(false)
+            }
+          />
+
+          <div
+            className="relative z-10 bg-white rounded-xl shadow-2xl w-full max-w-md p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-semibold mb-3">Удалить предмет?</h2>
+            <p className="text-sm text-gray-600 mb-5">
+              Вы действительно хотите удалить предмет{" "}
+              <span className="font-semibold">«{subject.name}»</span>? Это
+              действие нельзя отменить.
+            </p>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setIsDeleteConfirmOpen(false)}
+                disabled={deleteMutation.isPending}
+                className="px-4 py-2 rounded-lg border border-gray-300 text-sm hover:bg-gray-100 disabled:opacity-60"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={() => deleteMutation.mutate()}
+                disabled={deleteMutation.isPending}
+                className={`px-4 py-2 rounded-lg text-sm text-white transition ${
+                  deleteMutation.isPending
+                    ? "bg-red-400 cursor-not-allowed"
+                    : "bg-red-600 hover:bg-red-700"
+                }`}
+              >
+                {deleteMutation.isPending ? "Удаление..." : "Удалить"}
+              </button>
             </div>
           </div>
         </div>
