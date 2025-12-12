@@ -1,0 +1,197 @@
+import { useProfile } from "@/hooks";
+import { useQueryClient } from "@tanstack/react-query";
+import { useState, type FC, useEffect } from "react";
+import { FiBook, FiHelpCircle, FiUser, FiLogOut } from "react-icons/fi";
+import { useNavigate, useLocation } from "react-router-dom";
+
+interface SidePanelProps {
+  isOpen: boolean;
+  setIsOpen: (v: boolean) => void;
+}
+
+type MenuItem = "subjects" | "support" | "profile";
+
+export const SidePanel: FC<SidePanelProps> = ({ isOpen, setIsOpen }) => {
+  const queryClient = useQueryClient();
+  const { data } = useProfile();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const getActiveItemFromPath = (): MenuItem => {
+    const path = location.pathname;
+    if (path.startsWith("/subjects")) return "subjects";
+    if (path.startsWith("/support")) return "support";
+    if (path.startsWith("/profile")) return "profile";
+    return "subjects";
+  };
+
+  const [activeItem, setActiveItem] = useState<MenuItem>(() => {
+    const saved = localStorage.getItem("sidePanelActive");
+    return saved === "support"
+      ? "support"
+      : saved === "profile"
+      ? "profile"
+      : getActiveItemFromPath();
+  });
+
+  useEffect(() => {
+    const currentActive = getActiveItemFromPath();
+    setActiveItem(currentActive);
+    localStorage.setItem("sidePanelActive", currentActive);
+  }, [location.pathname]);
+
+  const togglePanel = () => setIsOpen(!isOpen);
+
+  const handleItemClick = (item: MenuItem) => {
+    setActiveItem(item);
+    navigate(`/${item}`, { replace: true });
+  };
+
+  const handleProfileClick = () => {
+    setActiveItem("profile");
+    navigate("/profile", { replace: true });
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    queryClient.clear();
+    navigate("/login", { replace: true });
+  };
+
+  return (
+    <>
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={togglePanel}
+        />
+      )}
+
+      <button
+        onClick={togglePanel}
+        className="fixed top-4 left-4 z-50 p-2 sm:p-3 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow border border-gray-200"
+      >
+        <svg
+          className="w-6 h-6 text-gray-700"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 6h16M4 12h16M4 18h16"
+          />
+        </svg>
+      </button>
+
+      <div
+        className={`
+          fixed top-0 left-0 h-full bg-white shadow-xl z-50
+          transform transition-transform duration-300 ease-in-out
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          w-full sm:w-80 max-w-full flex flex-col overflow-y-auto
+        `}
+      >
+        <div className="p-4 sm:p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              Students Tasks
+            </h1>
+            <button
+              onClick={togglePanel}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <svg
+                className="w-5 h-5 text-gray-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <div className="text-xs sm:text-sm text-gray-500 mb-4">Русский</div>
+
+          <div className="space-y-2">
+            <button
+              onClick={() => handleItemClick("subjects")}
+              className={`
+                w-full text-left p-3 rounded-lg transition-all duration-200
+                flex items-center gap-3
+                ${
+                  activeItem === "subjects"
+                    ? "bg-blue-50 text-blue-700 border border-blue-200"
+                    : "hover:bg-gray-50 border border-transparent"
+                }
+              `}
+            >
+              <FiBook className="w-5 h-5" />
+              <div className="font-light text-sm sm:text-base">Предметы</div>
+            </button>
+
+            <button
+              onClick={() => handleItemClick("support")}
+              className={`
+                w-full text-left p-3 rounded-lg transition-all duration-200
+                flex items-center gap-3
+                ${
+                  activeItem === "support"
+                    ? "bg-blue-50 text-blue-700 border border-blue-200"
+                    : "hover:bg-gray-50 border border-transparent"
+                }
+              `}
+            >
+              <FiHelpCircle className="w-5 h-5" />
+              <div className="font-light text-sm sm:text-base">Поддержка</div>
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-auto p-4 sm:p-6 border-t border-gray-200 bg-gray-50">
+          <button
+            onClick={handleProfileClick}
+            className={`
+              w-full flex items-center gap-3 py-3 px-4 rounded-lg border transition-colors mb-3 text-left
+              ${
+                activeItem === "profile"
+                  ? "bg-blue-50 text-blue-700 border-blue-200"
+                  : "bg-white border-gray-200 hover:border-gray-300"
+              }
+            `}
+          >
+            <FiUser
+              className={`w-5 h-5 ${
+                activeItem === "profile" ? "text-blue-600" : "text-gray-600"
+              }`}
+            />
+            <div
+              className={`
+                font-medium flex-1 text-center
+                ${activeItem === "profile" ? "text-blue-700" : "text-gray-900"}
+              `}
+            >
+              {data?.fullName}
+            </div>
+          </button>
+
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+          >
+            <FiLogOut className="w-5 h-5" />
+            Выйти
+          </button>
+        </div>
+      </div>
+    </>
+  );
+};
