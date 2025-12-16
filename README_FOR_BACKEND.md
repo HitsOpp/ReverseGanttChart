@@ -1,31 +1,39 @@
-# Бэк .net
+# Backend (.NET)
 
-## Установка и запуск
+## 📦 Описание
 
-1. Перейдите в раздел nuget и установите представленные пакетв:
+Данный проект представляет собой backend-приложение на **ASP.NET Core** с использованием **JWT-аутентификации**, **Entity Framework Core** и базы данных **MySQL**. В проекте настроена документация API через **Swagger**.
 
-Microsoft.AspNetCore.Authentication.JwtBearer
-Microsoft.AspNetCore.Identity
-Microsoft.AspNetCore.OpenApi
-Microsoft.EntityFrameworkCore
-Microsoft.EntityFrameworkCore.Design
-Microsoft.EntityFrameworkCore.Tools
-Microsoft.EntityFrameworkCore.Relational
-SwaggerUI.OpenApi
-Microsoft.Extensions.Configuration.Json
-Microsoft.Extensions.DependencyInjection.Abstractions
-Pomelo.EntityFrameworkCore.MySql
-Swashbuckle.AspNetCore
-System.IdentityModel.Tokens.Jwt
-Swashbuckle.AspNetCore
-BCrypt
-BCrypt.Net-Next
-BCrypt.Net-Nex
-Microsoft.AspNetCore.Http.Abstractions
-Pomelo.EntityFrameworkCore.MySql
+---
 
-2. Или через терминал dotnet add package <название_пакета>:
+## ⚙️ Установка и запуск
 
+### 1️⃣ Установка необходимых NuGet-пакетов
+
+Перейдите в **NuGet Package Manager** и установите следующие пакеты:
+
+* `Microsoft.AspNetCore.Authentication.JwtBearer`
+* `Microsoft.AspNetCore.Identity`
+* `Microsoft.AspNetCore.OpenApi`
+* `Microsoft.AspNetCore.Http.Abstractions`
+* `Microsoft.EntityFrameworkCore`
+* `Microsoft.EntityFrameworkCore.Design`
+* `Microsoft.EntityFrameworkCore.Tools`
+* `Microsoft.EntityFrameworkCore.Relational`
+* `Microsoft.Extensions.Configuration.Json`
+* `Microsoft.Extensions.DependencyInjection.Abstractions`
+* `Pomelo.EntityFrameworkCore.MySql`
+* `System.IdentityModel.Tokens.Jwt`
+* `Swashbuckle.AspNetCore`
+* `BCrypt.Net-Next` ✅ *(рекомендуется, актуальная версия)*
+
+---
+
+### 2️⃣ Установка пакетов через терминал
+
+Вы также можете установить все зависимости с помощью CLI:
+
+```bash
 dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer
 dotnet add package Microsoft.AspNetCore.Identity
 dotnet add package Microsoft.AspNetCore.OpenApi
@@ -34,13 +42,43 @@ dotnet add package Microsoft.EntityFrameworkCore
 dotnet add package Microsoft.EntityFrameworkCore.Design
 dotnet add package Microsoft.EntityFrameworkCore.Tools
 dotnet add package Microsoft.EntityFrameworkCore.Relational
-dotnet add package Swashbuckle.AspNetCore
 dotnet add package Microsoft.Extensions.Configuration.Json
 dotnet add package Microsoft.Extensions.DependencyInjection.Abstractions
 dotnet add package Pomelo.EntityFrameworkCore.MySql
 dotnet add package System.IdentityModel.Tokens.Jwt
-dotnet add package BCrypt.Net-Next  # Самый популярный и актуальный
+dotnet add package Swashbuckle.AspNetCore
+dotnet add package BCrypt.Net-Next
+```
 
-3. В качетсве бд используется MYSQL
+---
 
-4. После запуска проект будет доступен по адресу написаному в Run, обычно http://localhost:5261/swagger/index.html
+### 3️⃣ База данных
+
+В качестве базы данных используется **MySQL**.
+
+Провайдер для работы с EF Core:
+
+* `Pomelo.EntityFrameworkCore.MySql`
+
+Убедитесь, что строка подключения корректно указана в `appsettings.json`.
+
+---
+
+### 4️⃣ Запуск проекта
+
+После запуска приложение будет доступно по адресу (по умолчанию):
+
+```
+http://localhost:5261/swagger/index.html
+```
+
+Swagger предоставляет удобный интерфейс для тестирования и просмотра API.
+
+---
+
+## 🚀 Готово!
+
+Проект готов к использованию и дальнейшей разработке.
+
+Если порт отличается — ориентируйтесь на значение, указанное в консоли при запуске (`Run`).
+
