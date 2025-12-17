@@ -2,17 +2,18 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using ReverseGanttChart.Data;
 using ReverseGanttChart.Services;
 using ReverseGanttChart.Services.JWT;
 using System.Text;
+using System.Text.Json.Serialization;
+using ReverseGanttChart.Services.Project;
+using ReverseGanttChart.Services.Subject;
+using ReverseGanttChart.Services.Team;
+using ReverseGanttChart.Services.User;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -24,7 +25,16 @@ builder.Services.AddCors(options =>
             .AllowCredentials();
     });
 });
-// Database configuration
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.WriteIndented = true;
+    });
+builder.Services.AddEndpointsApiExplorer();
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
                        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
@@ -41,7 +51,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         }
     ));
 
-// JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -60,12 +69,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-
-// Register services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>(); 
 builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<ISubjectService, SubjectService>();
+builder.Services.AddScoped<ITeamService, TeamService>();
+builder.Services.AddScoped<IProjectService, ProjectService>();
 
-// Swagger configuration
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo 
@@ -78,7 +88,7 @@ builder.Services.AddSwaggerGen(options =>
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey,
+        Type = SecuritySchemeType.Http,
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
@@ -103,7 +113,6 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -111,10 +120,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors("AllowAll");
-// Добавьте эти middleware в правильном порядке
-app.UseAuthentication(); // Должно быть перед UseAuthorization
+
+
+app.UseAuthentication();
 app.UseAuthorization();
+app.UseCors("AllowAll");
+
 app.MapControllers();
 
 app.Run();

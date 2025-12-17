@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReverseGanttChart.Models;
 using ReverseGanttChart.Services;
@@ -5,7 +6,7 @@ using ReverseGanttChart.Services;
 namespace ReverseGanttChart.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
@@ -15,7 +16,7 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
-    [HttpPost("register")]
+    [HttpPost("/register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto request)
     {
         try
@@ -33,7 +34,7 @@ public class AuthController : ControllerBase
         }
     }
 
-    [HttpPost("login")]
+    [HttpPost("/login")]
     public async Task<IActionResult> Login([FromBody] LoginDto request)
     {
         try
@@ -48,6 +49,27 @@ public class AuthController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, new { message = "An error occurred during login." });
+        }
+    }
+
+    [Authorize]
+    [HttpPut("/profile/edit")]
+    public async Task<IActionResult> EditProfile(EditProfileDto request)
+    {
+        var userIdClaim = User.FindFirst("Id")?.Value;
+        if (string.IsNullOrEmpty(userIdClaim))
+            return Unauthorized("Invalid token: User ID not found.");
+
+        var userId = Guid.Parse(userIdClaim);
+
+        try
+        {
+            var profile = await _authService.EditProfile(userId, request);
+            return Ok(profile);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
         }
     }
 }
