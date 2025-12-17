@@ -5,7 +5,7 @@ using ReverseGanttChart.Services.User;
 namespace ReverseGanttChart.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 [Authorize]
 public class UserController : ControllerBase
 {
@@ -30,27 +30,5 @@ public class UserController : ControllerBase
         var userId = Guid.Parse(User.FindFirst("Id")?.Value);
         var result = await _userService.GetUserProfileAsync(userId);
         return result;
-    }
-    
-
-    [Authorize(Roles = "Teacher")]
-    [HttpGet("subject/{subjectId}/students")]
-    public async Task<IActionResult> GetSubjectStudents(Guid subjectId)
-    {
-        return await _userService.GetSubjectStudentsAsync(subjectId);
-    }
-    
-    [Authorize(Roles = "Teacher")]
-    [HttpGet("subject/{subjectId}/assists")]
-    public async Task<IActionResult> GetSubjectAssistsAsync(Guid subjectId)
-    {
-        return await _userService.GetSubjectAssistsAsync(subjectId);
-    }
-
-    [Authorize(Roles = "Teacher")]
-    [HttpGet("subject/{subjectId}/teachers")]
-    public async Task<IActionResult> GetSubjectTeachers(Guid subjectId)
-    {
-        return await _userService.GetSubjectTeachersAsync(subjectId);
     }
 }

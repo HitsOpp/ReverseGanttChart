@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ReverseGanttChart.Data;
 
@@ -11,9 +12,11 @@ using ReverseGanttChart.Data;
 namespace ReverseGanttChart.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251130113640_AddProj3")]
+    partial class AddProj3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,6 +51,9 @@ namespace ReverseGanttChart.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<Guid>("SubjectId")
                         .HasColumnType("char(36)");
 
@@ -80,6 +86,9 @@ namespace ReverseGanttChart.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<Guid?>("ParentTaskId")
+                        .HasColumnType("char(36)");
+
                     b.Property<int>("Priority")
                         .HasColumnType("int");
 
@@ -88,12 +97,14 @@ namespace ReverseGanttChart.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ParentTaskId");
+
                     b.HasIndex("ProjectId");
 
                     b.ToTable("ProjectTasks");
                 });
 
-            modelBuilder.Entity("ReverseGanttChart.Models.Project.ReverseGanttChart.Models.Project.TaskStage", b =>
+            modelBuilder.Entity("ReverseGanttChart.Models.Project.TaskStage", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -365,16 +376,23 @@ namespace ReverseGanttChart.Migrations
 
             modelBuilder.Entity("ReverseGanttChart.Models.Project.ReverseGanttChart.Models.Project.ProjectTask", b =>
                 {
+                    b.HasOne("ReverseGanttChart.Models.Project.ReverseGanttChart.Models.Project.ProjectTask", "ParentTask")
+                        .WithMany("Subtasks")
+                        .HasForeignKey("ParentTaskId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("ReverseGanttChart.Models.Project.Project", "Project")
                         .WithMany("Tasks")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("ParentTask");
+
                     b.Navigation("Project");
                 });
 
-            modelBuilder.Entity("ReverseGanttChart.Models.Project.ReverseGanttChart.Models.Project.TaskStage", b =>
+            modelBuilder.Entity("ReverseGanttChart.Models.Project.TaskStage", b =>
                 {
                     b.HasOne("ReverseGanttChart.Models.Project.ReverseGanttChart.Models.Project.ProjectTask", "Task")
                         .WithMany("Stages")
@@ -392,7 +410,7 @@ namespace ReverseGanttChart.Migrations
                         .HasForeignKey("CompletedById")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("ReverseGanttChart.Models.Project.ReverseGanttChart.Models.Project.TaskStage", "Stage")
+                    b.HasOne("ReverseGanttChart.Models.Project.TaskStage", "Stage")
                         .WithMany()
                         .HasForeignKey("StageId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -513,6 +531,8 @@ namespace ReverseGanttChart.Migrations
             modelBuilder.Entity("ReverseGanttChart.Models.Project.ReverseGanttChart.Models.Project.ProjectTask", b =>
                 {
                     b.Navigation("Stages");
+
+                    b.Navigation("Subtasks");
                 });
 
             modelBuilder.Entity("ReverseGanttChart.Models.Subject", b =>

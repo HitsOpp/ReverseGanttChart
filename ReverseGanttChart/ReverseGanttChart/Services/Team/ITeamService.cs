@@ -13,5 +13,9 @@ namespace ReverseGanttChart.Services.Team
         Task<IActionResult> JoinTeamAsync(Guid teamId, JoinTeamDto request, Guid userId);
         Task<IActionResult> LeaveTeamAsync(Guid teamId, Guid userId);
         Task<IActionResult> RemoveTeamMemberAsync(Guid teamId, Guid memberUserId, Guid currentUserId);
+        Task<IActionResult> GetUserTeamInSubjectAsync(Guid subjectId, Guid userId);
+        Task<IActionResult> GetAllUserTeamsAsync(Guid userId);
+        Task<IActionResult> CanUserJoinTeamAsync(Guid teamId, Guid userId);
+        Task<IActionResult> UpdateTechStackAsync(Guid teamId, UpdateTechStackDto request, Guid userId);
     }
 }

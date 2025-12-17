@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace ReverseGanttChart.Models
+namespace ReverseGanttChart.Models.Project
 {
-    public class EditSubjectDto
+    public class EditTaskDto
     {
         [Required]
         [StringLength(100)]
@@ -10,9 +10,11 @@ namespace ReverseGanttChart.Models
 
         [StringLength(500)]
         public string Description { get; set; }
-        
+
         [Required]
-        [StringLength(20)]
-        public string Color { get; set; }
+        public DateTime DueDate { get; set; }
+
+        [Required]
+        public ProjectTaskPriority Priority { get; set; }
     }
 }

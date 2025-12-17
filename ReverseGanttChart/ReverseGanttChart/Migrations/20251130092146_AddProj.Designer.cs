@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ReverseGanttChart.Data;
 
@@ -11,9 +12,11 @@ using ReverseGanttChart.Data;
 namespace ReverseGanttChart.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251130092146_AddProj")]
+    partial class AddProj
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,6 +51,9 @@ namespace ReverseGanttChart.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<Guid>("SubjectId")
                         .HasColumnType("char(36)");
 
@@ -60,11 +66,14 @@ namespace ReverseGanttChart.Migrations
                     b.ToTable("Projects");
                 });
 
-            modelBuilder.Entity("ReverseGanttChart.Models.Project.ReverseGanttChart.Models.Project.ProjectTask", b =>
+            modelBuilder.Entity("ReverseGanttChart.Models.Project.ProjectTask", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("CompletedDate")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
@@ -80,50 +89,33 @@ namespace ReverseGanttChart.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<Guid?>("ParentTaskId")
+                        .HasColumnType("char(36)");
+
                     b.Property<int>("Priority")
                         .HasColumnType("int");
 
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid?>("ProjectId1")
+                        .HasColumnType("char(36)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("ParentTaskId");
+
                     b.HasIndex("ProjectId");
+
+                    b.HasIndex("ProjectId1");
 
                     b.ToTable("ProjectTasks");
                 });
 
-            modelBuilder.Entity("ReverseGanttChart.Models.Project.ReverseGanttChart.Models.Project.TaskStage", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<float>("EstimatedEffort")
-                        .HasColumnType("float");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<Guid>("TaskId")
-                        .HasColumnType("char(36)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TaskId");
-
-                    b.ToTable("TaskStages");
-                });
-
-            modelBuilder.Entity("ReverseGanttChart.Models.Project.TeamStageProgress", b =>
+            modelBuilder.Entity("ReverseGanttChart.Models.Project.TaskStage", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -138,61 +130,30 @@ namespace ReverseGanttChart.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<float>("EstimatedEffort")
+                        .HasColumnType("float");
+
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<Guid>("StageId")
-                        .HasColumnType("char(36)");
-
-                    b.Property<Guid>("TeamId")
-                        .HasColumnType("char(36)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CompletedById");
-
-                    b.HasIndex("TeamId");
-
-                    b.HasIndex("StageId", "TeamId")
-                        .IsUnique();
-
-                    b.ToTable("TeamStageProgress");
-                });
-
-            modelBuilder.Entity("ReverseGanttChart.Models.Project.TeamTaskProgress", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<Guid?>("CompletedById")
-                        .HasColumnType("char(36)");
-
-                    b.Property<DateTime?>("CompletedDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<Guid>("TaskId")
                         .HasColumnType("char(36)");
 
-                    b.Property<Guid>("TeamId")
-                        .HasColumnType("char(36)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CompletedById");
 
-                    b.HasIndex("TeamId");
+                    b.HasIndex("TaskId");
 
-                    b.HasIndex("TaskId", "TeamId")
-                        .IsUnique();
-
-                    b.ToTable("TeamTaskProgress");
+                    b.ToTable("TaskStages");
                 });
 
             modelBuilder.Entity("ReverseGanttChart.Models.Subject", b =>
@@ -363,78 +324,44 @@ namespace ReverseGanttChart.Migrations
                     b.Navigation("Subject");
                 });
 
-            modelBuilder.Entity("ReverseGanttChart.Models.Project.ReverseGanttChart.Models.Project.ProjectTask", b =>
+            modelBuilder.Entity("ReverseGanttChart.Models.Project.ProjectTask", b =>
                 {
+                    b.HasOne("ReverseGanttChart.Models.Project.ProjectTask", "ParentTask")
+                        .WithMany("Subtasks")
+                        .HasForeignKey("ParentTaskId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("ReverseGanttChart.Models.Project.Project", "Project")
-                        .WithMany("Tasks")
+                        .WithMany()
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("ReverseGanttChart.Models.Project.Project", null)
+                        .WithMany("Tasks")
+                        .HasForeignKey("ProjectId1");
+
+                    b.Navigation("ParentTask");
+
                     b.Navigation("Project");
                 });
 
-            modelBuilder.Entity("ReverseGanttChart.Models.Project.ReverseGanttChart.Models.Project.TaskStage", b =>
+            modelBuilder.Entity("ReverseGanttChart.Models.Project.TaskStage", b =>
                 {
-                    b.HasOne("ReverseGanttChart.Models.Project.ReverseGanttChart.Models.Project.ProjectTask", "Task")
+                    b.HasOne("ReverseGanttChart.Models.User", "CompletedBy")
+                        .WithMany()
+                        .HasForeignKey("CompletedById")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ReverseGanttChart.Models.Project.ProjectTask", "Task")
                         .WithMany("Stages")
                         .HasForeignKey("TaskId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Task");
-                });
-
-            modelBuilder.Entity("ReverseGanttChart.Models.Project.TeamStageProgress", b =>
-                {
-                    b.HasOne("ReverseGanttChart.Models.User", "CompletedBy")
-                        .WithMany()
-                        .HasForeignKey("CompletedById")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("ReverseGanttChart.Models.Project.ReverseGanttChart.Models.Project.TaskStage", "Stage")
-                        .WithMany()
-                        .HasForeignKey("StageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ReverseGanttChart.Models.Team.Team", "Team")
-                        .WithMany()
-                        .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CompletedBy");
-
-                    b.Navigation("Stage");
-
-                    b.Navigation("Team");
-                });
-
-            modelBuilder.Entity("ReverseGanttChart.Models.Project.TeamTaskProgress", b =>
-                {
-                    b.HasOne("ReverseGanttChart.Models.User", "CompletedBy")
-                        .WithMany()
-                        .HasForeignKey("CompletedById")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("ReverseGanttChart.Models.Project.ReverseGanttChart.Models.Project.ProjectTask", "Task")
-                        .WithMany()
-                        .HasForeignKey("TaskId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ReverseGanttChart.Models.Team.Team", "Team")
-                        .WithMany()
-                        .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("CompletedBy");
 
                     b.Navigation("Task");
-
-                    b.Navigation("Team");
                 });
 
             modelBuilder.Entity("ReverseGanttChart.Models.Subject", b =>
@@ -510,9 +437,11 @@ namespace ReverseGanttChart.Migrations
                     b.Navigation("Tasks");
                 });
 
-            modelBuilder.Entity("ReverseGanttChart.Models.Project.ReverseGanttChart.Models.Project.ProjectTask", b =>
+            modelBuilder.Entity("ReverseGanttChart.Models.Project.ProjectTask", b =>
                 {
                     b.Navigation("Stages");
+
+                    b.Navigation("Subtasks");
                 });
 
             modelBuilder.Entity("ReverseGanttChart.Models.Subject", b =>

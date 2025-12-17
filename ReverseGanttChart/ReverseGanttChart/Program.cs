@@ -6,13 +6,33 @@ using ReverseGanttChart.Data;
 using ReverseGanttChart.Services;
 using ReverseGanttChart.Services.JWT;
 using System.Text;
+using System.Text.Json.Serialization;
+using ReverseGanttChart.Services.Project;
 using ReverseGanttChart.Services.Subject;
 using ReverseGanttChart.Services.Team;
 using ReverseGanttChart.Services.User;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5173")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    });
+});
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.WriteIndented = true;
+    });
 builder.Services.AddEndpointsApiExplorer();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
@@ -54,16 +74,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<ISubjectService, SubjectService>();
 builder.Services.AddScoped<ITeamService, TeamService>();
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll",
-        builder =>
-        {
-            builder.AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader();
-        });
-});
+builder.Services.AddScoped<IProjectService, ProjectService>();
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -114,6 +125,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseCors("AllowAll");
+
 app.MapControllers();
 
 app.Run();

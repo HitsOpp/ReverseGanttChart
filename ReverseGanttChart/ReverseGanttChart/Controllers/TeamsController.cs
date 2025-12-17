@@ -4,7 +4,7 @@ using ReverseGanttChart.Models;
 using ReverseGanttChart.Services.Team;
 
 [ApiController]
-[Route("api/subjects/{subjectId}/[controller]")]
+[Route("[controller]")]
 [Authorize]
 public class TeamsController : ControllerBase
 {
@@ -30,14 +30,14 @@ public class TeamsController : ControllerBase
         return result;
     }
 
-    [HttpGet("{teamId}")]
+    [HttpGet("information")]
     public async Task<IActionResult> GetTeam(Guid teamId)
     {
         var result = await _teamService.GetTeamAsync(teamId);
         return result;
     }
 
-    [HttpPut("{teamId}/edit")]
+    [HttpPut("edit")]
     public async Task<IActionResult> EditTeam(Guid teamId, [FromBody] EditTeamDto request)
     {
         var userId = Guid.Parse(User.FindFirst("Id")?.Value);
@@ -45,7 +45,7 @@ public class TeamsController : ControllerBase
         return result;
     }
 
-    [HttpDelete("{teamId}/delete")]
+    [HttpDelete("delete")]
     public async Task<IActionResult> DeleteTeam(Guid teamId)
     {
         var userId = Guid.Parse(User.FindFirst("Id")?.Value);
@@ -53,7 +53,7 @@ public class TeamsController : ControllerBase
         return result;
     }
 
-    [HttpPost("{teamId}/join")]
+    [HttpPost("join")]
     public async Task<IActionResult> JoinTeam(Guid teamId, [FromBody] JoinTeamDto request)
     {
         var userId = Guid.Parse(User.FindFirst("Id")?.Value);
@@ -61,7 +61,7 @@ public class TeamsController : ControllerBase
         return result;
     }
 
-    [HttpPost("{teamId}/leave")]
+    [HttpPost("leave")]
     public async Task<IActionResult> LeaveTeam(Guid teamId)
     {
         var userId = Guid.Parse(User.FindFirst("Id")?.Value);
@@ -69,11 +69,28 @@ public class TeamsController : ControllerBase
         return result;
     }
 
-    [HttpDelete("{teamId}/members/{memberUserId}")]
+    [HttpDelete("members/remove")]
     public async Task<IActionResult> RemoveTeamMember(Guid teamId, Guid memberUserId)
     {
         var currentUserId = Guid.Parse(User.FindFirst("Id")?.Value);
         var result = await _teamService.RemoveTeamMemberAsync(teamId, memberUserId, currentUserId);
         return result;
     }
+
+    [HttpGet("my-team")]
+    public async Task<IActionResult> GetMyTeamInSubject(Guid subjectId)
+    {
+        var userId = Guid.Parse(User.FindFirst("Id")?.Value);
+        var result = await _teamService.GetUserTeamInSubjectAsync(subjectId, userId);
+        return result;
+    }
+
+    [HttpGet("user/team")]
+    [Authorize(Roles = "Teacher")]
+    public async Task<IActionResult> GetUserTeamInSubject(Guid subjectId, Guid userId)
+    {
+        var result = await _teamService.GetUserTeamInSubjectAsync(subjectId, userId);
+        return result;
+    }
+    
 }
