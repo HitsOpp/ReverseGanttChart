@@ -25,7 +25,7 @@
 * `Pomelo.EntityFrameworkCore.MySql`
 * `System.IdentityModel.Tokens.Jwt`
 * `Swashbuckle.AspNetCore`
-* `BCrypt.Net-Next` ✅ *(рекомендуется, актуальная версия)*
+* `BCrypt.Net-Next` 
 
 ---
 
