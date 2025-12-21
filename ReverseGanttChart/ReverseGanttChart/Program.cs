@@ -14,7 +14,7 @@ using ReverseGanttChart.Services.User;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
+// ------------------ CORS ------------------
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
@@ -25,7 +25,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-
+// ------------------ Контроллеры ------------------
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -36,7 +36,7 @@ builder.Services.AddControllers()
 
 builder.Services.AddEndpointsApiExplorer();
 
-
+// ------------------ База данных ------------------
 var connectionString =
     $"Server={Environment.GetEnvironmentVariable("MYSQLHOST")};" +
     $"Port={Environment.GetEnvironmentVariable("MYSQLPORT")};" +
@@ -51,6 +51,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         mysqlOptions => { mysqlOptions.EnableRetryOnFailure(); }
     ));
 
+// ------------------ JWT ------------------
+var jwtKey = builder.Configuration["Jwt:Key"] 
+             ?? throw new InvalidOperationException("JWT Key not configured");
+var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+var jwtAudience = builder.Configuration["Jwt:Audience"];
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -61,16 +66,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER"),
-            ValidAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_KEY") ?? throw new InvalidOperationException("JWT_KEY not set")))
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
         };
     });
 
 builder.Services.AddAuthorization();
 
-
+// ------------------ DI сервисы ------------------
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<JwtService>();
@@ -78,7 +82,7 @@ builder.Services.AddScoped<ISubjectService, SubjectService>();
 builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
 
-
+// ------------------ Swagger ------------------
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
@@ -112,20 +116,20 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+// ------------------ Middleware ------------------
+app.UseCors("AllowFrontend");
+app.UseAuthentication();
+app.UseAuthorization();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseCors("AllowFrontend");
-app.UseAuthentication();
-app.UseAuthorization();
-
 app.MapControllers();
 
-
+// ------------------ Порт ------------------
 var port = Environment.GetEnvironmentVariable("PORT");
 if (!string.IsNullOrEmpty(port))
 {
