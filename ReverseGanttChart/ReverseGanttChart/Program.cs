@@ -19,11 +19,13 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.AllowAnyHeader()
-              .AllowAnyMethod()
-              .WithOrigins("https://denrok15.github.io/h/"); 
+        policy
+            .WithOrigins("https://denrok15.github.io")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
+
 
 // ------------------ Контроллеры ------------------
 builder.Services.AddControllers()
