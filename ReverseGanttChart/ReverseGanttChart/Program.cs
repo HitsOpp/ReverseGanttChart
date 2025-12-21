@@ -14,17 +14,17 @@ using ReverseGanttChart.Services.User;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        policy
-            .WithOrigins("http://localhost:5173")
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials();
+        policy.AllowAnyHeader()
+              .AllowAnyMethod()
+              .WithOrigins("https://denrok15.github.io/h/"); 
     });
 });
+
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -33,23 +33,24 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
         options.JsonSerializerOptions.WriteIndented = true;
     });
+
 builder.Services.AddEndpointsApiExplorer();
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-                       ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+var connectionString =
+    $"Server={Environment.GetEnvironmentVariable("MYSQLHOST")};" +
+    $"Port={Environment.GetEnvironmentVariable("MYSQLPORT")};" +
+    $"Database={Environment.GetEnvironmentVariable("MYSQLDATABASE")};" +
+    $"User={Environment.GetEnvironmentVariable("MYSQLUSER")};" +
+    $"Password={Environment.GetEnvironmentVariable("MYSQLPASSWORD")};";
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(
         connectionString,
         new MySqlServerVersion(new Version(8, 0, 21)),
-        mysqlOptions => 
-        {
-            mysqlOptions.EnableRetryOnFailure(
-                maxRetryCount: 5,
-                maxRetryDelay: TimeSpan.FromSeconds(10),
-                errorNumbersToAdd: null);
-        }
+        mysqlOptions => { mysqlOptions.EnableRetryOnFailure(); }
     ));
+
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -60,27 +61,29 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER"),
+            ValidAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured")))
+                Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_KEY") ?? throw new InvalidOperationException("JWT_KEY not set")))
         };
     });
 
 builder.Services.AddAuthorization();
 
+
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IUserService, UserService>(); 
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<ISubjectService, SubjectService>();
 builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
 
+
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo 
-    { 
-        Title = "ReverseGanttChart API", 
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "ReverseGanttChart API",
         Version = "v1",
         Description = "API for Reverse Gantt Chart Application"
     });
@@ -100,11 +103,7 @@ builder.Services.AddSwaggerGen(options =>
         {
             new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference 
-                { 
-                    Type = ReferenceType.SecurityScheme, 
-                    Id = "Bearer" 
-                }
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
             },
             Array.Empty<string>()
         }
@@ -113,19 +112,24 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
-
+app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseCors("AllowAll");
 
 app.MapControllers();
+
+
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port))
+{
+    app.Urls.Add($"http://0.0.0.0:{port}");
+}
 
 app.Run();
