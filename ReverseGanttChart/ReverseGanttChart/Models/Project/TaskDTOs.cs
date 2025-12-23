@@ -1,12 +1,23 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace ReverseGanttChart.Models.Project
 {
     namespace ReverseGanttChart.Models.Project
     {
         public class CreateTaskDto
         {
+            [Required]
+            [StringLength(100)]
             public string Name { get; set; }
+
+            [StringLength(500)]
             public string Description { get; set; }
+
+            [Required]
+            [FutureDate(ErrorMessage = "Due date must be in the future")]
             public DateTime DueDate { get; set; }
+
+            [Required]
             public ProjectTaskPriority Priority { get; set; }
         }
     }
