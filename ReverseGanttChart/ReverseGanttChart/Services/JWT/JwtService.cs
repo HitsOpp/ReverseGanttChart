@@ -31,7 +31,6 @@ public class JwtService
 
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim("Id", user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Sub, user.FullName ?? string.Empty),
             new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
