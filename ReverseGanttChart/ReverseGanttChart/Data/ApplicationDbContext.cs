@@ -28,6 +28,12 @@ public class ApplicationDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
         
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.Property(u => u.IsTeacher)
+                .IsRequired()
+                .HasDefaultValue(false);
+        });
         modelBuilder.Entity<UserSubject>()
             .HasKey(us => us.Id);
 
