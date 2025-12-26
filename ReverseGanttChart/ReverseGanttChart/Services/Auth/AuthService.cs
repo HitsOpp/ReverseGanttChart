@@ -36,15 +36,26 @@ public class AuthService : IAuthService
     
     public async Task<string> Login(LoginDto loginDto)
     {
-        var user = await _context.Users
-            .Include(u => u.UserSubjects) 
-            .ThenInclude(us => us.Subject)
-            .FirstOrDefaultAsync(u => u.Email == loginDto.Email);
-    
-        if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
+        try
+        {
+            var user = await _context.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Email == loginDto.Email);
+
+            if (user == null)
+                throw new UnauthorizedAccessException("Invalid credentials.");
+
+            var passwordValid = BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash);
+            if (!passwordValid)
+                throw new UnauthorizedAccessException("Invalid credentials.");
+
+            return _jwtService.GenerateToken(user);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Login error for {loginDto.Email}: {ex.Message}");
             throw new UnauthorizedAccessException("Invalid credentials.");
-    
-        return _jwtService.GenerateToken(user);
+        }
     }
     public async Task<UserProfileDto> GetProfile(Guid userId)
     {
