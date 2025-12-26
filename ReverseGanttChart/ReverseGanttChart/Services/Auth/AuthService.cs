@@ -25,7 +25,8 @@ public class AuthService : IAuthService
         {
             Email = request.Email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-            FullName = request.FullName
+            FullName = request.FullName,
+            IsTeacher = request.IsTeacher
         };
     
         _context.Users.Add(user);
@@ -74,19 +75,19 @@ public class AuthService : IAuthService
     public async Task<UserProfileDto> EditProfile(Guid userId, EditProfileDto request)
     {
         var user = await _context.Users.SingleOrDefaultAsync(u => u.Id == userId);
-        
+    
         if (user == null)
             throw new KeyNotFoundException("User not found.");
-        
+    
         user.FullName = request.FullName;
-        
         _context.Users.Update(user);
         await _context.SaveChangesAsync();
-        
+    
         return new UserProfileDto
         {
             FullName = user.FullName,
             Email = user.Email,
+            IsTeacher = user.IsTeacher 
         };
     }
 }

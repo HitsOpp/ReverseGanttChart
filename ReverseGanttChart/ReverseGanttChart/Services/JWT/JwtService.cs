@@ -32,6 +32,7 @@ public class JwtService
         var claims = new List<Claim>
         {
             new Claim("Id", user.Id.ToString()),
+            new Claim("IsTeacher", user.IsTeacher.ToString()),
             new Claim(JwtRegisteredClaimNames.Sub, user.FullName ?? string.Empty),
             new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
@@ -40,6 +41,10 @@ public class JwtService
         if (user.IsTeacher)
         {
             claims.Add(new Claim(ClaimTypes.Role, "Teacher"));
+        }
+        else
+        {
+            claims.Add(new Claim(ClaimTypes.Role, "Student"));
         }
 
         if (!user.IsTeacher)
@@ -54,14 +59,9 @@ public class JwtService
                 claims.Add(new Claim($"Subject_{userSubject.SubjectId}_Role", userSubject.Role.ToString()));
             }
 
-            if (userSubjects.Any(us => us.Role == SubjectRole.Student))
-            {
-                claims.Add(new Claim(ClaimTypes.Role, "Student"));
-            }
-        
             if (userSubjects.Any(us => us.Role == SubjectRole.Assist))
             {
-                claims.Add(new Claim(ClaimTypes.Role, "Assist"));
+                claims.Add(new Claim("IsAssist", "true"));
             }
         }
 
